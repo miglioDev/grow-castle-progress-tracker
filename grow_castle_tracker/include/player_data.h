@@ -1,12 +1,14 @@
+// include/player_data.h
 #ifndef PLAYER_DATA_H
 #define PLAYER_DATA_H
 
+// Player structure: fields must match everywhere in the code
 typedef struct {
     int wave;
     int infinity_castle_level;
     int leader_level;
-    int hero_avg_level;
-    char last_update[20];
+    int heroes_avg_level;
+    char last_update[20]; // "YYYY-MM-DD"
 } Player;
 
 #endif

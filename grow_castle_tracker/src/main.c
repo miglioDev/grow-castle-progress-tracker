@@ -14,12 +14,18 @@ void analyze_player_data(Player *p,float *r_hero,float *r_leader,float *r_colony
 float hero_ratio, colony_ratio, leader_ratio;
 float *r_hero = &hero_ratio; 
 float *r_colony = &colony_ratio;
-float *r_leader_ratio = &leader_ratio;
+float *r_leader = &leader_ratio;
 
 
 int main()
 {
     Player player = {0}; // create empty player struct
+    if (load_last_player_data(&player)) {
+    printf("[Loaded last saved player data: %s, wave=%d]\n", player.last_update, player.wave);
+} else {
+    printf("[No previous saved player data found]\n");
+}
+
     int choice, sub_choice;
 
     // Infinite loop for main menu
@@ -95,7 +101,7 @@ void player_data_sub_menu(int sub_choice, Player *p)
         scanf("%d", &p->leader_level);
 
         printf("Heroes average level: ");
-        scanf("%d", &p->hero_avg_level);
+        scanf("%d", &p->heroes_avg_level);
 
         // Register update date
         time_t now = time(NULL);
@@ -103,6 +109,9 @@ void player_data_sub_menu(int sub_choice, Player *p)
         strftime(p->last_update, sizeof(p->last_update), "%Y-%m-%d", t);
 
         printf("\nData saved successfully! Last update: %s\n", p->last_update);
+
+        // NEW: Save data to file
+        save_player_data(p);
     }
     else if (sub_choice == 2) // View Player Info
     {
@@ -110,7 +119,7 @@ void player_data_sub_menu(int sub_choice, Player *p)
         printf("Wave: %d\n", p->wave);
         printf("Infinity Castle Level: %d\n", p->infinity_castle_level);
         printf("Leader Level: %d\n", p->leader_level);
-        printf("Heroes average level: %d\n", p->hero_avg_level);
+        printf("Heroes average level: %d\n", p->heroes_avg_level);
         printf("Last update: %s\n", p->last_update);
     }
     else
@@ -123,7 +132,7 @@ void player_data_sub_menu(int sub_choice, Player *p)
 void analyze_player_data(Player *p,float *r_hero,float *r_leader,float *r_colony)
 {
     //all ratio 
-    (*r_hero) = (float)p->hero_avg_level/ p->wave;
+    (*r_hero) = (float)p->heroes_avg_level/ p->wave;
     (*r_leader) = (float)p->leader_level/ p->wave;
     (*r_colony) = (float)p->infinity_castle_level/ p->wave;
 
@@ -131,8 +140,8 @@ void analyze_player_data(Player *p,float *r_hero,float *r_leader,float *r_colony
     // your wave, subject,  your ratio, recommanded ratio, corrisponding level to the recommanded ratio?
     printf("Wave:\tsubject:\tyour ratio:\t\trecommanded ratio:\t\n");
     
-    printf("%d\t main hero\t%f\t ratio: 0.02-0.04\n"),p->wave,*r_hero;
-    printf("%d\t leader:\t%f\t ratio: 0.03\n"),p->wave,*r_leader;
-    printf("%d\t IC:\t%f\t\t3x under 500k\n"),p->wave,*r_colony;
+    printf("%d\t main hero\t%f\t\t ratio: 0.02-0.04\n",p->wave,*r_hero);
+    printf("%d\t leader:\t%f\t\t ratio: 0.03\n",p->wave,*r_leader);
+    printf("%d\t Infinite C.:\t%f\t\t3x under 500k\n",p->wave,*r_colony);
 
 }

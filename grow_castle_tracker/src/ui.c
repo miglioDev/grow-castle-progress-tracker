@@ -34,11 +34,12 @@ void ratio_and_suggestion()
     printf("In this section, we will show your ratio stats and recommended levels.\n");
 }
 
-// -- PLACEHOLDER MENUS (future) --
 void show_colony_stats()
 {
-    printf("\n[Colony Stats Placeholder]\n");
+    printf("\n== Welcome to colony stats ==\n");
 }
+
+// -- PLACEHOLDER MENUS (future) --
 
 void show_progress_history()
 {

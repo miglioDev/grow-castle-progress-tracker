@@ -1,49 +1,51 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include "../include/ui.h"
-#include "../include/player_data.h"
-#include "../include/calculator.h"
-#include "../include/file_operations.h"
-
-#include <stdio.h>
 #include "../include/ui.h"
 
+
+// -- MAIN MENU --
 void show_main_menu()
 {
-    printf("==================\n");
-    printf(" Grow Castle Tool \n");
-    printf("==================\n");
-    printf("1) Player Data Management\n");
-    printf("2) Efficiency & Ratio Calculator\n");
-    printf("3) Colony Stats Tracker\n");
-    printf("4) Progress & History\n");
-    printf("5) Export / Import Data\n");
+    printf("\n==============================\n");
+    printf(" Grow Castle Progress Tracker \n");
+    printf("==============================\n");
+    printf("1) Player Data\n");
+    printf("2) Efficiency Calculator\n");
+    printf("3) Colony Stats\n");
+    printf("4) Progress History\n");
+    printf("5) Export/Import Data\n");
     printf("6) Exit\n");
-    printf("------------------\n");
+    printf("==============================\n");
 }
 
-// --- Stub (function alreay linked!) ---
+
+// -- PLAYER DATA SUBMENU --
 void manage_player_data()
 {
-    printf("[Player Data Management] — Feature under development.\n");
+    printf("\n=== Player Data Menu ===\n");
+    printf("1) Enter Player Info\n");
+    printf("2) View Player Info\n");
+    printf("3) Back to Main Menu\n");
+    printf("========================\n");
 }
 
+
+// -- PLACEHOLDER MENUS (future) --
 void show_efficiency_calculator()
 {
-    printf("[Efficiency & Ratio Calculator] — Feature under development.\n");
+    printf("\n[Efficiency Calculator Placeholder]\n");
 }
 
 void show_colony_stats()
 {
-    printf("[Colony Stats Tracker] — Feature under development.\n");
+    printf("\n[Colony Stats Placeholder]\n");
 }
 
 void show_progress_history()
 {
-    printf("[Progress & History] — Feature under development.\n");
+    printf("\n[Progress History Placeholder]\n");
 }
 
 void export_import_data()
 {
-    printf("[Export / Import Data] — Feature under development.\n");
+    printf("\n[Export/Import Placeholder]\n");
 }

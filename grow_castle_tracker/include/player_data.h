@@ -2,9 +2,11 @@
 #define PLAYER_DATA_H
 
 typedef struct {
-    char name[50];
-    int level;
-    double ratio;
+    int wave;
+    int infinity_castle_level;
+    int leader_level;
+    int hero_avg_level;
+    char last_update[20];
 } Player;
 
 #endif

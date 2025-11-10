@@ -8,6 +8,14 @@
 
 // Forward declaration for submenu function
 void player_data_sub_menu(int sub_choice, Player *p);
+void analyze_player_data(Player *p,float *r_hero,float *r_leader,float *r_colony);
+
+//ratio stats
+float hero_ratio, colony_ratio, leader_ratio;
+float *r_hero = &hero_ratio; 
+float *r_colony = &colony_ratio;
+float *r_leader_ratio = &leader_ratio;
+
 
 int main()
 {
@@ -33,7 +41,8 @@ int main()
             break;
 
         case 2:
-            show_efficiency_calculator();
+            ratio_and_suggestion();
+            analyze_player_data(&player,&hero_ratio,&leader_ratio,&colony_ratio);
             break;
 
         case 3:
@@ -108,4 +117,22 @@ void player_data_sub_menu(int sub_choice, Player *p)
     {
         printf("Error: invalid choice!\n");
     }
+}
+
+// -- Ratio & suggestion -- 
+void analyze_player_data(Player *p,float *r_hero,float *r_leader,float *r_colony)
+{
+    //all ratio 
+    (*r_hero) = (float)p->hero_avg_level/ p->wave;
+    (*r_leader) = (float)p->leader_level/ p->wave;
+    (*r_colony) = (float)p->infinity_castle_level/ p->wave;
+
+    // stats print 
+    // your wave, subject,  your ratio, recommanded ratio, corrisponding level to the recommanded ratio?
+    printf("Wave:\tsubject:\tyour ratio:\t\trecommanded ratio:\t\n");
+    
+    printf("%d\t main hero\t%f\t ratio: 0.02-0.04\n"),p->wave,*r_hero;
+    printf("%d\t leader:\t%f\t ratio: 0.03\n"),p->wave,*r_leader;
+    printf("%d\t IC:\t%f\t\t3x under 500k\n"),p->wave,*r_colony;
+
 }

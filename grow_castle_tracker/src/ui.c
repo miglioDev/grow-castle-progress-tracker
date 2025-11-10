@@ -9,7 +9,7 @@ void show_main_menu()
     printf(" Grow Castle Progress Tracker \n");
     printf("==============================\n");
     printf("1) Player Data\n");
-    printf("2) Efficiency Calculator\n");
+    printf("2) Ratio & suggestion\n");
     printf("3) Colony Stats\n");
     printf("4) Progress History\n");
     printf("5) Export/Import Data\n");
@@ -28,13 +28,13 @@ void manage_player_data()
     printf("========================\n");
 }
 
-
-// -- PLACEHOLDER MENUS (future) --
-void show_efficiency_calculator()
+void ratio_and_suggestion()
 {
-    printf("\n[Efficiency Calculator Placeholder]\n");
+    printf("\n== Welcome to ratio and suggestion ==\n");
+    printf("In this section, we will show your ratio stats and recommended levels.\n");
 }
 
+// -- PLACEHOLDER MENUS (future) --
 void show_colony_stats()
 {
     printf("\n[Colony Stats Placeholder]\n");

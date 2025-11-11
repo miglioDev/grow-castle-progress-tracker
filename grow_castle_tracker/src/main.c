@@ -12,7 +12,8 @@ void player_data_sub_menu(int sub_choice, Player *p);
 void analyze_player_data(Player *p,float *r_hero,float *r_leader,float *r_colony);
 
 //prototype for colony stats
-double colony_stats_calculation(Player *p,double gold_infinity_town,double gold_from_infinity_town);
+double colony_stats_calculation(Player *p);
+void stats_print_infinite_town(Player *p,float *r_colony,double gold_from_infinity_town);
 
 //ratio stats
 float hero_ratio, colony_ratio, leader_ratio;
@@ -23,7 +24,7 @@ float *r_leader = &leader_ratio;
 //colony_stats
 double gold_infinity_town;
 double gold_from_infinity_town = 0;
-void stats_print_infinite_town(Player *p,float *r_colony,double gold_from_infinity_town);
+
 
 
 int main()
@@ -62,7 +63,12 @@ int main()
 
         case 3:
             show_colony_stats();
-            gold_infinity_town = colony_stats_calculation(&player,gold_infinity_town,gold_from_infinity_town);
+            gold_infinity_town = colony_stats_calculation(&player);
+            gold_from_infinity_town = colony_stats_calculation(&player);
+
+                // Recalculate colony ratio before printing
+                colony_ratio = (float)player.infinity_castle_level / player.wave;
+
             stats_print_infinite_town(&player,&colony_ratio,gold_from_infinity_town);
 
             break;
@@ -154,22 +160,21 @@ void analyze_player_data(Player *p,float *r_hero,float *r_leader,float *r_colony
     
     printf("%d\t main hero\t%f\t\t ratio: 0.02-0.04\n",p->wave,*r_hero);
     printf("%d\t leader:\t%f\t\t ratio: 0.03\n",p->wave,*r_leader);
-    printf("%d\t Infinite C.:\t%f\t\t3x under 500k\n",p->wave,*r_colony);
+    printf("%d\t Infinite C.:\t%f\t\tAs high as possible!\n",p->wave,*r_colony);
 
 }
 
 // Infinite town stats
-double colony_stats_calculation(Player *p,double gold_infinity_town,double gold_from_infinity_town)
+double colony_stats_calculation(Player *p)
 {
-    if (p->infinity_castle_level <= 86662.0 )
-    {
-        return 6600.0 + 5400.0 * (p->infinity_castle_level);
+    double gold;
+    if (p->infinity_castle_level <= 86662.0)
+        gold = 6600.0 + 5400.0 * (p->infinity_castle_level);
+    else {
+        double d = p->infinity_castle_level - 86662.0;
+        gold = 467981440.0 + 5400.0 * d + 0.00964 * d * d;
     }
-        else {
-            double d = p->infinity_castle_level - 86662.0;
-            gold_from_infinity_town = 467981440.0 + 5400.0 * d + 0.00964 * d * d;
-            }
-    return gold_from_infinity_town;
+    return gold;
 }
 // Infinite town output
 void stats_print_infinite_town(Player *p,float *r_colony,double gold_from_infinity_town)
@@ -177,8 +182,10 @@ void stats_print_infinite_town(Player *p,float *r_colony,double gold_from_infini
     double gold_with_buff;
     gold_with_buff = gold_from_infinity_town * 1.38;
 
-    printf("Level of Infinite Town:%f\n",(p->infinity_castle_level));
+    printf("Level of Infinite Town:%d\n",(p->infinity_castle_level));
     printf("Ratio with your wawe:%f\n",*r_colony);
     printf("Estimated gold obtained, (just from Infinite Town): %f\n",gold_from_infinity_town);
     printf("Gold with Whip (item) and maxed skill:%f\n",gold_with_buff);
+
+    printf("\nNote: gold is estimated and may contain errors for now\n");
 }

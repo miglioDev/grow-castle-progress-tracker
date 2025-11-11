@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../include/file_operations.h"
+#include "../include/graph.h" // ensures ProgressData type
 
 // File path - recommended: create a 'data' folder in the project root and keep file there.
 // If you don't want folders, change to "player_data.csv".
@@ -70,6 +71,46 @@ int load_last_player_data(Player *p)
         p->heroes_avg_level = heroes;
         return 1;
     }
+}
 
-    return 0;
+// read_progress_history: read CSV file and fill out[] with date,wave,infinity_castle_level
+int read_progress_history(const char *filename, ProgressData *out, int max_entries)
+{
+    if (!out || max_entries <= 0) return 0;
+
+    FILE *f = fopen(filename, "r");
+    if (!f) {
+        // try fallback in current directory
+        f = fopen("player_data.csv", "r");
+        if (!f) return 0;
+    }
+
+    char line[512];
+    int count = 0;
+
+    // read line by line, parse CSV
+    while (fgets(line, sizeof(line), f) && count < max_entries) {
+        // Trim line endings
+        size_t L = strlen(line);
+        while (L > 0 && (line[L-1] == '\n' || line[L-1] == '\r')) { line[--L] = '\0'; }
+
+        // skip empty
+        if (L == 0) continue;
+
+        // parse: date,wave,inf,leader,heroes
+        char datebuf[64];
+        int wave = 0, inf = 0, leader = 0, heroes = 0;
+        int scanned = sscanf(line, "%63[^,],%d,%d,%d,%d", datebuf, &wave, &inf, &leader, &heroes);
+        if (scanned >= 3) {
+            // keep date,wave,inf ; ignore other fields if missing
+            strncpy(out[count].date, datebuf, sizeof(out[count].date)-1);
+            out[count].date[sizeof(out[count].date)-1] = '\0';
+            out[count].wave = wave;
+            out[count].infinity_castle_level = inf;
+            count++;
+        }
+    }
+
+    fclose(f);
+    return count;   
 }

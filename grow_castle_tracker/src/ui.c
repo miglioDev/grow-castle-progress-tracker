@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include "../include/ui.h"
+#include "../include/graph.h"
+#include "../include/file_operations.h"
 
 
 // -- MAIN MENU --
@@ -39,14 +41,52 @@ void show_colony_stats()
     printf("\n== Welcome to colony stats ==\n");
 }
 
-// -- PLACEHOLDER MENUS (future) --
 
 void show_progress_history()
 {
-    printf("\n[Progress History Placeholder]\n");
+    // buffer for progress data (limit to a reasonable number)
+    const int MAX_ENTRIES = 300;
+    ProgressData data[MAX_ENTRIES];
+    int count = read_progress_history("data/player_data.csv", data, MAX_ENTRIES);
+
+    if (count <= 0) {
+        printf("No progress data available yet. Insert player data to build history.\n");
+        return;
+    }
+
+    // draw graph; pass 0 for auto-detect terminal width
+    draw_progress_graph(data, count, 0);
 }
 
+// -- PLACEHOLDER MENUS (future) --
+// Option 5 - Data Import / Export instructions
 void export_import_data()
 {
-    printf("\n[Export/Import Placeholder]\n");
+    printf("\n==============================\n");
+    printf("    IMPORT / EXPORT DATA\n");
+    printf("==============================\n\n");
+    printf("Your progress is automatically saved in:\n");
+    printf("  -> ./data/player_data.csv\n\n");
+
+    printf("This file contains all your stored information,\n");
+    printf("such as your Wave, Colony Infinity ratio, and Date.\n\n");
+
+    printf(" EXPORT:\n");
+    printf(" - To back up your progress, simply copy this file\n");
+    printf("   to a safe location (e.g. USB drive, cloud storage).\n");
+    printf(" - You can also rename it with a timestamp, e.g.:\n");
+    printf("   player_data_backup_2025-11-11.csv\n\n");
+
+    printf(" IMPORT:\n");
+    printf(" - To restore your progress, place your backup CSV file\n");
+    printf("   back into the './data' folder.\n");
+    printf(" - Make sure it is named exactly 'player_data.csv'\n");
+    printf("   before restarting the application.\n\n");
+
+    printf("  NOTE:\n");
+    printf(" This project uses plain CSV format for simplicity.\n");
+    printf(" Future updates will add automatic import/export features.\n\n");
+
+    printf("==============================\n\n");
+    getchar();  // Wait for user input before returning
 }

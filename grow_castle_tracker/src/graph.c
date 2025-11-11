@@ -78,7 +78,7 @@ void draw_progress_graph(const ProgressData *data, int count, int terminal_width
         printf("%-12s %6d | ", date_buf, d->wave);
 
         // Print bar
-        for (int b = 0; b < bar_len; ++b) printf("█");
+        for (int b = 0; b < bar_len; ++b) printf("#");
 
         // Fill remainder with spaces to keep columns aligned
         for (int b = bar_len; b < graph_area; ++b) putchar(' ');

@@ -1,6 +1,6 @@
 # Data Directory
 
-This directory stores user save files with the `.gcsave` extension.
+This directory stores user save files.
 
 ## File Format:
 - Binary format for efficient storage

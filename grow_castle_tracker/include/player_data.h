@@ -1,4 +1,3 @@
-// include/player_data.h
 #ifndef PLAYER_DATA_H
 #define PLAYER_DATA_H
 
@@ -8,7 +7,9 @@ typedef struct {
     int infinity_castle_level;
     int leader_level;
     int heroes_avg_level;
-    char last_update[20]; // "YYYY-MM-DD"
+    int town_archer_level;    
+    int castle_level;        
+    char last_update[20];    // "YYYY-MM-DD"
 } Player;
 
 #endif

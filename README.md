@@ -87,7 +87,7 @@ All your data is safely stored in the `/data` folder, automatically updated ever
 ### 🏠 Main Menu
 The central hub for all your tracking needs - easy navigation and clear options.
 
-![Main Menu](screenshots/Screenshot%20_menu.png)
+![Main Menu](screenshots/Screenshot_menu.png)
 
 ---
 

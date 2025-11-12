@@ -87,21 +87,21 @@ All your data is safely stored in the `/data` folder, automatically updated ever
 ### 🏠 Main Menu
 The central hub for all your tracking needs - easy navigation and clear options.
 
-![Main Menu](screenshots/Screenshot_menu.png)
+![Main Menu](screenshots/Screenshot%20_menu.png)
 
 ---
 
 ### ⚔ Ratio Analysis & Suggestions
 Get detailed information about your current set-up, levels and ratios.
 
-![Ratio Analysis](screenshots/Screenshot_ratio.png)
+![Ratio Analysis](screenshots/Screenshot%20_ratio.png)
 
 ---
 
 ### 📊 Progress Visualization
 Visualize your wave progression over time with clean terminal graphs to track your growth trends.
 
-![Progress Graph](screenshots/Screenshot_graph.png)
+![Progress Graph](screenshots/Screenshot%20_graph.png)
 
 ---
 

@@ -150,6 +150,10 @@ void player_data_sub_menu(int sub_choice, Player *p)
         printf("Town Archer Level:%d\n", p->town_archer_level);
         printf("Castle Level: %d\n", p->castle_level);
     }
+    else if (sub_choice == 3)
+    {
+        return;
+    }
     else
     {
         printf("Error: invalid choice!\n");

@@ -10,6 +10,7 @@
 #define PLAYER_DATA_FILE "data/player_data.csv"
 
 // Save one record (append). Format: YYYY-MM-DD,wave,infinity_castle_level,leader_level,heroes_avg_level
+// Save one record (append). Format: YYYY-MM-DD,wave,infinity_castle_level,leader_level,heroes_avg_level,town_archer_level,castle_level
 int save_player_data(const Player *p)
 {
     FILE *f = fopen(PLAYER_DATA_FILE, "a");
@@ -19,13 +20,15 @@ int save_player_data(const Player *p)
         if (!f) return 0;
     }
 
-    // Write CSV line
-    fprintf(f, "%s,%d,%d,%d,%d\n",
+    // Write CSV line with all fields (date + 6 ints)
+    fprintf(f, "%s,%d,%d,%d,%d,%d,%d\n",
             p->last_update,
             p->wave,
             p->infinity_castle_level,
             p->leader_level,
-            p->heroes_avg_level);
+            p->heroes_avg_level,
+            p->town_archer_level,
+            p->castle_level);
 
     fclose(f);
     return 1;
@@ -55,22 +58,42 @@ int load_last_player_data(Player *p)
 
     if (last_line[0] == '\0') return 0; // empty file
 
-    // parse last_line: date,wave,inf,leader,heroes
-    // last_update max 19 chars (YYYY-MM-DD)
+    // parse last_line: try full format first (date,wave,inf,leader,heroes,town_archer,castle)
     char datebuf[32];
-    int wave, inf, leader, heroes;
-    int scanned = sscanf(last_line, "%31[^,],%d,%d,%d,%d",
-                         datebuf, &wave, &inf, &leader, &heroes);
-    if (scanned == 5) {
-        // copy into struct
+    int wave = 0, inf = 0, leader = 0, heroes = 0, town_archer = 0, castle = 0;
+    int scanned = sscanf(last_line, "%31[^,],%d,%d,%d,%d,%d,%d",
+                         datebuf, &wave, &inf, &leader, &heroes, &town_archer, &castle);
+
+    if (scanned == 7) {
+        // full match
         strncpy(p->last_update, datebuf, sizeof(p->last_update)-1);
         p->last_update[sizeof(p->last_update)-1] = '\0';
         p->wave = wave;
         p->infinity_castle_level = inf;
         p->leader_level = leader;
         p->heroes_avg_level = heroes;
+        p->town_archer_level = town_archer;
+        p->castle_level = castle;
         return 1;
+    } else {
+        // maybe old format with only 5 fields: date,wave,inf,leader,heroes
+        scanned = sscanf(last_line, "%31[^,],%d,%d,%d,%d",
+                         datebuf, &wave, &inf, &leader, &heroes);
+        if (scanned == 5) {
+            strncpy(p->last_update, datebuf, sizeof(p->last_update)-1);
+            p->last_update[sizeof(p->last_update)-1] = '\0';
+            p->wave = wave;
+            p->infinity_castle_level = inf;
+            p->leader_level = leader;
+            p->heroes_avg_level = heroes;
+            p->town_archer_level = 0; // default
+            p->castle_level = 0;      // default
+            return 1;
+        }
     }
+
+    // couldn't parse
+    return 0;
 }
 
 // read_progress_history: read CSV file and fill out[] with date,wave,infinity_castle_level
@@ -97,7 +120,7 @@ int read_progress_history(const char *filename, ProgressData *out, int max_entri
         // skip empty
         if (L == 0) continue;
 
-        // parse: date,wave,inf,leader,heroes
+        // parse: date,wave,inf,leader,heroes[,town_archer,castle]
         char datebuf[64];
         int wave = 0, inf = 0, leader = 0, heroes = 0;
         int scanned = sscanf(line, "%63[^,],%d,%d,%d,%d", datebuf, &wave, &inf, &leader, &heroes);

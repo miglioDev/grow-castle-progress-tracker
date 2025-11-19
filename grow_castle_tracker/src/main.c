@@ -7,7 +7,7 @@
 #include "../include/calculator.h"
 #include "../include/file_operations.h"
 
-// Forward declaration for submenu function
+//prototype for submenu function
 void player_data_sub_menu(int sub_choice, Player *p);
 void analyze_player_data(Player *p,float *r_hero,float *r_leader,float *r_colony,float *r_ta,float *r_castle);
 
@@ -15,7 +15,7 @@ void analyze_player_data(Player *p,float *r_hero,float *r_leader,float *r_colony
 double colony_stats_calculation(Player *p);
 void stats_print_infinite_town(Player *p,float *r_colony,double gold_from_infinity_town);
 
-//ratio stats
+//ratio stats variable
 float hero_ratio, colony_ratio, leader_ratio, town_archer_ratio, castle_ratio;
 float *r_hero = &hero_ratio; 
 float *r_colony = &colony_ratio;
@@ -105,6 +105,11 @@ int main()
 // -- Player Data Sub-Menu Section --
 void player_data_sub_menu(int sub_choice, Player *p)
 {
+    if (sub_choice == 3)
+    {
+        printf("Returning to main menu...\n");
+        return;
+    }
     printf("\n=== Player Information ===\n");
 
     if (sub_choice == 1) // Enter Player Info
@@ -150,10 +155,6 @@ void player_data_sub_menu(int sub_choice, Player *p)
         printf("Town Archer Level:%d\n", p->town_archer_level);
         printf("Castle Level: %d\n", p->castle_level);
     }
-    else if (sub_choice == 3)
-    {
-        return;
-    }
     else
     {
         printf("Error: invalid choice!\n");
@@ -198,12 +199,12 @@ double colony_stats_calculation(Player *p)
 void stats_print_infinite_town(Player *p,float *r_colony,double gold_from_infinity_town)
 {
     double gold_with_buff;
-    gold_with_buff = gold_from_infinity_town * 1.38;
+    gold_with_buff = gold_from_infinity_town * 1.20;
 
     printf("Level of Infinite Town: %d\n",(p->infinity_castle_level));
     printf("Ratio with your wawe: %f\n",*r_colony);
     printf("Estimated gold obtained, (just from Infinite Town): %f\n",gold_from_infinity_town);
-    printf("Gold with Whip (item) and maxed skill: %f\n",gold_with_buff);
+    printf("Gold with Whip (item): %f\n",gold_with_buff);
 
-    printf("\nNote: gold is estimated and may contain errors for now\n");
+    printf("\nNote: gold may contain small errors for now\n");
 }

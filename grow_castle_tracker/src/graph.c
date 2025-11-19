@@ -7,15 +7,17 @@
 #define MAX(a,b) ((a) > (b) ? (a) : (b))
 #endif
 
-// Default maximum ratio to plot. Ratios above this are capped and shown with a '>' marker.
-#define MAX_RATIO 20.0f
+// Ratio thresholds and maximum values for different scales
+#define RATIO_MICRO_THRESHOLD  0.01f  // Below this: micro scale
+#define RATIO_LOW_THRESHOLD    1.0f   // Below this: low scale, above: high scale
+#define MAX_RATIO_HIGH         20.0f  // Maximum for high ratio scale
+#define MAX_RATIO_LOW          1.0f   // Maximum for low ratio scale
+#define MAX_RATIO_MICRO        0.01f  // Maximum for micro ratio scale
 
 // Default graph width if we cannot detect terminal width
 #define DEFAULT_TERM_WIDTH 80
 
-// Try to get terminal width from environment COLUMNS, fallback to DEFAULT_TERM_WIDTH.
-// This is simple and cross-platform friendly (works in many shells). If you run this
-// in environments that set `COLUMNS`, it will adapt.
+// Try to get terminal width from environment COLUMNS
 static int detect_terminal_width(void) {
     char *cols = getenv("COLUMNS");
     if (cols) {
@@ -25,9 +27,49 @@ static int detect_terminal_width(void) {
     return DEFAULT_TERM_WIDTH;
 }
 
+// Determine which scale to use based on ratio value
+static int get_ratio_scale(float ratio) {
+    if (ratio < RATIO_MICRO_THRESHOLD) return 0; // Micro scale
+    if (ratio < RATIO_LOW_THRESHOLD) return 1;   // Low scale
+    return 2;                                    // High scale
+}
+
+// Calculate bar length based on ratio and scale type
+static int calculate_bar_length(float ratio, int scale_type, int graph_area) {
+    float display_ratio = ratio;
+    int capped = 0;
+    
+    switch (scale_type) {
+        case 0: // Micro scale: 0.0 to 0.01
+            if (ratio > MAX_RATIO_MICRO) {
+                display_ratio = MAX_RATIO_MICRO;
+                capped = 1;
+            }
+            return (int)((display_ratio / MAX_RATIO_MICRO) * (float)graph_area + 0.5f);
+            
+        case 1: // Low scale: 0.01 to 1.0
+            if (ratio > MAX_RATIO_LOW) {
+                display_ratio = MAX_RATIO_LOW;
+                capped = 1;
+            }
+            return (int)((display_ratio / MAX_RATIO_LOW) * (float)graph_area + 0.5f);
+            
+        case 2: // High scale: 1.0 to 20.0
+            if (ratio > MAX_RATIO_HIGH) {
+                display_ratio = MAX_RATIO_HIGH;
+                capped = 1;
+            }
+            return (int)(((display_ratio - RATIO_LOW_THRESHOLD) / 
+                         (MAX_RATIO_HIGH - RATIO_LOW_THRESHOLD)) * (float)graph_area + 0.5f);
+            
+        default:
+            return 0;
+    }
+}
+
 // draw_progress_graph: prints for each entry a single line with:
-// [date] [wave] | ██████...  ratio (numeric)
-// Oldest entries appear first (top -> newest bottom).
+// [date] [wave] | ###...  ratio (numeric)
+// Uses three different scaling modes for different ratio ranges
 void draw_progress_graph(const ProgressData *data, int count, int terminal_width)
 {
     if (!data || count <= 0) {
@@ -46,8 +88,6 @@ void draw_progress_graph(const ProgressData *data, int count, int terminal_width
 
     if (graph_area < 10) graph_area = 10; // minimal width
 
-    // Find max ratio among data (optional) or rely on MAX_RATIO
-    // We will scale against MAX_RATIO so that ratio values are always comparable.
     printf("\n=== Progress History (oldest to newest) ===\n");
     printf("Date         Wave     | Ratio graph (IC / Wave)\n");
     printf("-------------------------------------------------------------\n");
@@ -58,15 +98,19 @@ void draw_progress_graph(const ProgressData *data, int count, int terminal_width
         float ratio = 0.0f;
         if (d->wave > 0) ratio = (float)d->infinity_castle_level / (float)d->wave;
 
-        // clamp and compute bar length
+        // Determine scale type and calculate bar length
+        int scale_type = get_ratio_scale(ratio);
         int capped = 0;
         float display_ratio = ratio;
-        if (ratio > MAX_RATIO) {
-            display_ratio = MAX_RATIO;
-            capped = 1;
+        
+        // Check for capping
+        switch (scale_type) {
+            case 0: if (ratio > MAX_RATIO_MICRO) { display_ratio = MAX_RATIO_MICRO; capped = 1; } break;
+            case 1: if (ratio > MAX_RATIO_LOW) { display_ratio = MAX_RATIO_LOW; capped = 1; } break;
+            case 2: if (ratio > MAX_RATIO_HIGH) { display_ratio = MAX_RATIO_HIGH; capped = 1; } break;
         }
-
-        int bar_len = (int)((display_ratio / MAX_RATIO) * (float)graph_area + 0.5f);
+        
+        int bar_len = calculate_bar_length(ratio, scale_type, graph_area);
         if (bar_len < 0) bar_len = 0;
         if (bar_len > graph_area) bar_len = graph_area;
 
@@ -77,16 +121,23 @@ void draw_progress_graph(const ProgressData *data, int count, int terminal_width
 
         printf("%-12s %6d | ", date_buf, d->wave);
 
-        // Print bar
+        // Print bar using '#' characters
         for (int b = 0; b < bar_len; ++b) printf("#");
 
-        // Fill remainder with spaces to keep columns aligned
+        // Fill remainder with spaces to maintain alignment
         for (int b = bar_len; b < graph_area; ++b) putchar(' ');
 
-        // Print ratio numeric (2 decimal places). If capped, add '>' to indicate overflow.
+        // Print ratio with appropriate decimal precision
         if (capped) {
             printf(" %6.2f >", ratio);
+        } else if (scale_type == 0) {
+            // Micro scale: show more decimal places for very small values
+            printf(" %8.4f", ratio);
+        } else if (scale_type == 1) {
+            // Low scale: show standard precision
+            printf(" %8.4f", ratio);
         } else {
+            // High scale: show standard precision
             printf(" %8.4f", ratio);
         }
 
@@ -94,6 +145,9 @@ void draw_progress_graph(const ProgressData *data, int count, int terminal_width
     }
 
     printf("-------------------------------------------------------------\n");
-    printf("Notes: bar length scaled to ratio in range [0 .. %.0f]. Values greater than\n", MAX_RATIO);
-    printf("       shown with '>' marker on the right. More data -> better trend view.\n\n");
+    printf("Scaling explanation:\n");
+    printf("  Micro: 0.0000 to 0.0100 - full bar represents 0.01\n");
+    printf("  Low:   0.0100 to 1.0000 - full bar represents 1.00\n");
+    printf("  High:  1.0000 to 20.000 - full bar represents 20.00\n");
+    printf("  Values exceeding scale maximum shown with '>' marker\n\n");
 }

@@ -4,8 +4,9 @@
 
 ![C Language](https://img.shields.io/badge/Language-C-blue.svg)
 ![MIT License](https://img.shields.io/badge/License-MIT-green.svg)
+![Version](https://img.shields.io/badge/Version-1.1.0-orange.svg)
 
-> **🚀 First Release** - This is the initial version of the tool with core functionality. More features coming soon!
+> **🚀 Enhanced Visualization Update** - Improved graphs, better performance, and smoother user experience!
 
 It allows you to:
 - 📈 Track **wave progression** and **Infinity Castle levels**
@@ -109,7 +110,6 @@ Visualize your wave progression over time with clean terminal graphs to track yo
 
 This is just the beginning! Planned features for upcoming versions:
 
-* **📈 Enhanced Graphing**: More detailed and accurate graphs available for all tracked data points
 * **🎯 Individual Hero Tracking**: Track levels and efficiency for each hero separately
 * **🔧 More Heroes & Items**: Expanded database with more heroes, items, and upgrade paths
 * **📱 Better UI/UX**: Improved interface and user experience

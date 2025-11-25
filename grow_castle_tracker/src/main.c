@@ -187,11 +187,13 @@ void analyze_player_data(Player *p,float *r_hero,float *r_leader,float *r_colony
 double colony_stats_calculation(Player *p)
 {
     double gold;
-    if (p->infinity_castle_level <= 86662.0)
+    if (p->infinity_castle_level <= 1.0) {
+        gold = 10000.0;  // lv1 know data
+    } 
+    if (p->infinity_castle_level <= 86661.0)
         gold = 6600.0 + 5400.0 * (p->infinity_castle_level);
     else {
-        double d = p->infinity_castle_level - 86662.0;
-        gold = 467981440.0 + 5400.0 * d + 0.00964 * d * d;
+        gold = 5617.5 * p->infinity_castle_level - 18842345.0;
     }
     return gold;
 }

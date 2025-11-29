@@ -187,26 +187,21 @@ void analyze_player_data(Player *p,float *r_hero,float *r_leader,float *r_colony
 double colony_stats_calculation(Player *p)
 {
     double gold;
-    if (p->infinity_castle_level <= 1.0) {
-        gold = 10000.0;  // lv1 know data
-    } 
-    if (p->infinity_castle_level <= 86661.0)
-        gold = 6600.0 + 5400.0 * (p->infinity_castle_level);
-    else {
-        gold = 5617.5 * p->infinity_castle_level - 18842345.0;
-    }
+
+    gold = 4500 * p->infinity_castle_level + 10000;
+
     return gold;
 }
 // Infinite town output
 void stats_print_infinite_town(Player *p,float *r_colony,double gold_from_infinity_town)
 {
-    double gold_with_buff;
-    gold_with_buff = gold_from_infinity_town * 1.20;
+    double gold_with_xpbuff,gold_with_whip_and_xp;
+    gold_with_xpbuff = gold_from_infinity_town * 1.20;
+    gold_with_whip_and_xp = gold_from_infinity_town * 1.35;
 
     printf("Level of Infinite Town: %d\n",(p->infinity_castle_level));
     printf("Ratio with your wawe: %f\n",*r_colony);
-    printf("Estimated gold obtained, (just from Infinite Town): %f\n",gold_from_infinity_town);
-    printf("Gold with Whip (item): %f\n",gold_with_buff);
-
-    printf("\nNote: gold may contain small errors for now\n");
+    printf("Gold obtained, (Base Infinite Town): %f\n",gold_from_infinity_town);
+    printf("Gold with lv 20 colony gold skill: %f\n",gold_with_xpbuff);
+    printf("Gold with Whip + Skill: %f\n", gold_with_whip_and_xp);
 }

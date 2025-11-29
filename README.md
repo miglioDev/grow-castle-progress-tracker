@@ -4,7 +4,7 @@
 
 ![C Language](https://img.shields.io/badge/Language-C-blue.svg)
 ![MIT License](https://img.shields.io/badge/License-MIT-green.svg)
-![Version](https://img.shields.io/badge/Version-1.1.0-orange.svg)
+![Version](https://img.shields.io/badge/Version-1.2.0-orange.svg)
 
 > **🚀 Enhanced Visualization Update** - Improved graphs, better performance, and smoother user experience!
 

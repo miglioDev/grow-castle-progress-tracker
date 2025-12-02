@@ -33,7 +33,7 @@ void manage_player_data()
 void ratio_and_suggestion()
 {
     printf("\n== Welcome to ratio and suggestion ==\n");
-    printf("In this section, we will show your ratio stats and recommended levels.\n");
+    printf("In this section, you'll see ratio stats and recommended levels.\n");
 }
 
 void show_colony_stats()
@@ -84,8 +84,7 @@ void export_import_data()
     printf("   before restarting the application.\n\n");
 
     printf("  NOTE:\n");
-    printf(" This project uses plain CSV format for simplicity.\n");
-    printf(" Future updates will add automatic import/export features.\n\n");
+    printf(" This project uses plain CSV format for simplicity.\n\n");
 
     printf("==============================\n\n");
     getchar();  // Wait for user input before returning

@@ -201,7 +201,7 @@ void stats_print_infinite_town(Player *p,float *r_colony,double gold_from_infini
 
     printf("Level of Infinite Town: %d\n",(p->infinity_castle_level));
     printf("Ratio with your wawe: %f\n",*r_colony);
-    printf("Gold obtained, (Base Infinite Town): %f\n",gold_from_infinity_town);
-    printf("Gold with lv 20 colony gold skill: %f\n",gold_with_xpbuff);
-    printf("Gold with Whip + Skill: %f\n", gold_with_whip_and_xp);
+    printf("Gold obtained, (Base Infinite Town): %.0f\n",gold_from_infinity_town);
+    printf("Gold with lv 20 colony gold skill: %.0f\n",gold_with_xpbuff);
+    printf("Gold with Whip + Skill: %.0f\n", gold_with_whip_and_xp);
 }

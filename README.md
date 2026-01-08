@@ -6,86 +6,80 @@
 ![MIT License](https://img.shields.io/badge/License-MIT-green.svg)
 ![Version](https://img.shields.io/badge/Version-1.2.0-orange.svg)
 
-> **🚀 Enhanced Visualization Update** - Improved graphs, better performance, and smoother user experience!
-
 It allows you to:
 - 📈 Track **wave progression** and **Infinity Castle levels**
 - ⚔ Calculate **efficiency ratios and performance metrics**
-- 🧠 Compare **current ratios** with **recommanded upgrade benchmarks**
+- 🧠 Compare **current ratios** with **recommended upgrade benchmarks**
 - 📊 Visualize **progress history** with simple terminal graphs
 - 💾 Save data locally for long-term tracking and analysis
 - ✏ **Modify previously entered data** for accurate tracking
 
 ---
 
-## ⚡ Why Choose This Tool?
+## Quick Start
 
-- **🚀 Lightweight & Fast**: Written in pure C for maximum performance and minimal resource usage
-- **💻 Cross-Platform**: Works on Windows, Linux, and macOS
-- **🔄 Flexible**: Edit your data anytime to keep tracking accurate
+### Requirements
+- Windows, Linux, or macOS
+- Git
+- GCC compiler
+- Make
 
----
+### Installation
 
-## 🚀 Quick Start
+Clone the repository and build the project:
 
-### What You'll Need:
-- **Windows, Linux, or macOS**
-- **Git** (to download the project)
-- **GCC compiler** (usually already installed on Linux/macOS)
+```bash
+git clone https://github.com/miglioDev/grow-castle-progress-tracker.git
+cd grow-castle-progress-tracker
+make run
+```
 
-### Step-by-Step Installation:
+The program will compile and start automatically.
 
-1. **Download the project:**
-   bash
-   git clone https://github.com/miglioDev/grow-castle-progress-tracker.git
-   cd grow-castle-progress-tracker
-   
+### Platform Notes
 
-2. **Run with one command:**
-   bash
-   make run
-   
+**Windows**
 
-That's it! The program will compile and start automatically.
+* Recommended: install Git Bash and use the commands above
 
----
+**Linux / macOS**
 
-### 💡 Need Help Installing?
+* Use your system terminal
+* If `make` or `gcc` are missing, your package manager will prompt you to install them
 
-**🪟 Windows Users:**
-- **Easy method:** Install [Git Bash](https://git-scm.com/downloads) and use the commands above
-- **Alternative:** Download the ZIP file from GitHub and extract it
+### Running the Program
 
-**🐧 Linux / 🍎 macOS:**
-- Open Terminal and use the commands above
-- If `make` isn't installed, your system will guide you through installation
+After building the project, you can start it anytime with:
 
----
-
-### ▶ Running After Installation
-
-Once installed, you can always restart the program with:
-bash
+```bash
 ./bin/grow_castle_tool
-
-
+```
 ---
 
 ## 🧭 How to Use
 
-* **1️⃣ Manage Player Data:** Insert, view, or modify your wave, leader, heroes, and Infinity Castle stats
-* **2️⃣ Ratios & Suggestions:** Check if your upgrades are well balanced
-* **3️⃣ Colony Stats:** View gold output and colony efficiency metrics
-* **4️⃣ Progress History:** See your growth graph over time with visual trends
-* **5️⃣ Import / Export Data:** Backup your progress or move it between devices
+- **Manage Player Data:** Insert, view, or modify wave, leader, heroes, and Infinity Castle statistics
+- **Ratios & Suggestions:** Check whether your upgrades are balanced and efficient
+- **Colony Stats:** View gold production and colony efficiency metrics
+- **Progress History:** Visualize your progression over time using terminal graphs
+- **Import / Export Data:** Back up your progress or move it between devices
 
-All your data is safely stored in the `/data` folder, automatically updated every time you save new stats. **You can modify any previously entered data** to maintain accurate tracking.
+All your data is stored locally inside the `/data` folder using a CSV file and is automatically updated whenever new stats are saved.
+
+## Technical Overview
+
+The application is written in **C** and uses simple data structures to manage player statistics during runtime.
+
+- Player data is loaded into memory, processed, and saved locally
+- Data persistence is handled using a **CSV file** with numeric values
+- The program runs entirely offline, with no network access or external services
+- A basic **Makefile** is used to compile and run the project
 
 ---
 
 ## 🖼 Features Preview
 
-### 🏠 Main Menu
+### Main Menu
 The central hub for all your tracking needs - easy navigation and clear options.
 
 ![Main Menu](screenshots/Screenshot_menu.png)
@@ -106,26 +100,14 @@ Visualize your wave progression over time with clean terminal graphs to track yo
 
 ---
 
-## 🚀 Future Roadmap
+## Feedback & Contributions
 
-This is just the beginning! Planned features for upcoming versions:
+Contributions, bug reports, and suggestions are welcome.
 
-* **🎯 Individual Hero Tracking**: Track levels and efficiency for each hero separately
-* **🔧 More Heroes & Items**: Expanded database with more heroes, items, and upgrade paths
-* **📱 Better UI/UX**: Improved interface and user experience
-
-**💡 Have suggestions?** I'd love to hear your ideas for improving the tool!
-
----
-
-## 💬 Feedback & Contributions
-
-Found a bug? Have suggestions or feature requests?
-Feel free to:
-
-* 🪶 Open a **Pull Request**
-* 🐛 Report issues in the **GitHub Issues** tab
-* 💬 Or reach out directly to me on Discord: **@miglioDev**
+You can:
+- Open an issue on GitHub for bugs or feature requests
+- Submit a Pull Request with improvements
+- Contact me on Discord: **@miglioDev**
 
 ---
 

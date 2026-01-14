@@ -7,12 +7,11 @@
 ![Version](https://img.shields.io/badge/Version-1.2.0-orange.svg)
 
 It allows you to:
-- 📈 Track **wave progression** and **Infinity Castle levels**
-- ⚔ Calculate **efficiency ratios and performance metrics**
-- 🧠 Compare **current ratios** with **recommended upgrade benchmarks**
-- 📊 Visualize **progress history** with simple terminal graphs
-- 💾 Save data locally for long-term tracking and analysis
-- ✏ **Modify previously entered data** for accurate tracking
+- Track wave progression and Infinity Castle levels
+- Calculate efficiency ratios and compare them with recommended upgrade benchmarks
+- Visualize progress history using simple terminal graphs
+- Save data locally for long-term tracking and analysis
+- Modify previously entered data to keep tracking accurate
 
 ---
 

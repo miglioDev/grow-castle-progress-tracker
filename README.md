@@ -29,7 +29,7 @@ Clone the repository and build the project:
 
 ```bash
 git clone https://github.com/miglioDev/grow-castle-progress-tracker.git
-cd grow-castle-progress-tracker
+cd grow-castle-progress-tracker/grow_castle_tracker
 make run
 ```
 
@@ -51,6 +51,7 @@ The program will compile and start automatically.
 After building the project, you can start it anytime with:
 
 ```bash
+cd grow_castle_tracker
 ./bin/grow_castle_tool
 ```
 ---

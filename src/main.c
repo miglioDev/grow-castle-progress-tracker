@@ -1,7 +1,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>  // for time(), localtime(), strftime()
+#include <time.h>  
 #include "../include/ui.h"
 #include "../include/player_data.h"
 #include "../include/calculator.h"
@@ -31,7 +31,7 @@ double gold_from_infinity_town = 0;
 
 int main()
 {
-    Player player = {0}; // create empty player struct
+    Player player = {0}; 
     if (load_last_player_data(&player)) {
     printf("[Loaded last saved player data: %s, wave=%d]\n", player.last_update, player.wave);
 } else {
@@ -40,10 +40,10 @@ int main()
 
     int choice, sub_choice;
 
-    // Infinite loop for main menu
+    // Infinite-loop  main menu
     while (1)
     {
-        show_main_menu(); // prints main menu
+        show_main_menu(); 
         printf("Select an option: ");
         scanf("%d", &choice);
 
@@ -94,7 +94,7 @@ int main()
 
         // Pause before showing the main menu again
         printf("\nPress ENTER to continue...");
-        getchar(); // consume leftover newline
+        getchar(); 
         getchar();
     }
 
@@ -171,7 +171,7 @@ void analyze_player_data(Player *p,float *r_hero,float *r_leader,float *r_colony
     (*r_ta) = (float)p->town_archer_level/p->wave;
     (*r_castle) = (float)p->castle_level/p->wave;
 
-    // stats print 
+    // stats print order
     // your wave, subject,  your ratio, recommanded ratio, corrisponding level to the recommanded ratio?
     printf("Wave:\tsubject:\tyour ratio:\t\trecommanded ratio:\t\n");
     
@@ -192,6 +192,7 @@ double colony_stats_calculation(Player *p)
 
     return gold;
 }
+
 // Infinite town output
 void stats_print_infinite_town(Player *p,float *r_colony,double gold_from_infinity_town)
 {

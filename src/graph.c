@@ -14,10 +14,9 @@
 #define MAX_RATIO_LOW          1.0f   // Maximum for low ratio scale
 #define MAX_RATIO_MICRO        0.01f  // Maximum for micro ratio scale
 
-// Default graph width if we cannot detect terminal width
 #define DEFAULT_TERM_WIDTH 80
 
-// Try to get terminal width from environment COLUMNS
+// get terminal width from environment COLUMNS
 static int detect_terminal_width(void) {
     char *cols = getenv("COLUMNS");
     if (cols) {
@@ -27,7 +26,7 @@ static int detect_terminal_width(void) {
     return DEFAULT_TERM_WIDTH;
 }
 
-// Determine which scale to use based on ratio value
+// Determine which scale 
 static int get_ratio_scale(float ratio) {
     if (ratio < RATIO_MICRO_THRESHOLD) return 0; // Micro scale
     if (ratio < RATIO_LOW_THRESHOLD) return 1;   // Low scale
@@ -67,9 +66,8 @@ static int calculate_bar_length(float ratio, int scale_type, int graph_area) {
     }
 }
 
-// draw_progress_graph: prints for each entry a single line with:
+
 // [date] [wave] | ###...  ratio (numeric)
-// Uses three different scaling modes for different ratio ranges
 void draw_progress_graph(const ProgressData *data, int count, int terminal_width)
 {
     if (!data || count <= 0) {
@@ -114,24 +112,20 @@ void draw_progress_graph(const ProgressData *data, int count, int terminal_width
         if (bar_len < 0) bar_len = 0;
         if (bar_len > graph_area) bar_len = graph_area;
 
-        // Print date (left aligned), wave (right aligned)
         char date_buf[32];
         strncpy(date_buf, d->date, sizeof(date_buf) - 1);
         date_buf[sizeof(date_buf) - 1] = '\0';
 
         printf("%-12s %6d | ", date_buf, d->wave);
 
-        // Print bar using '#' characters
         for (int b = 0; b < bar_len; ++b) printf("#");
 
-        // Fill remainder with spaces to maintain alignment
         for (int b = bar_len; b < graph_area; ++b) putchar(' ');
 
-        // Print ratio with appropriate decimal precision
         if (capped) {
             printf(" %6.2f >", ratio);
         } else if (scale_type == 0) {
-            // Micro scale: show more decimal places for very small values
+            // Micro 
             printf(" %8.4f", ratio);
         } else if (scale_type == 1) {
             // Low scale: show standard precision

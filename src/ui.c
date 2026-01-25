@@ -58,7 +58,6 @@ void show_progress_history()
     draw_progress_graph(data, count, 0);
 }
 
-// -- PLACEHOLDER MENUS (future) --
 // Option 5 - Data Import / Export instructions
 void export_import_data()
 {
@@ -87,5 +86,5 @@ void export_import_data()
     printf(" This project uses plain CSV format for simplicity.\n\n");
 
     printf("==============================\n\n");
-    getchar();  // Wait for user input before returning
+    getchar();  
 }

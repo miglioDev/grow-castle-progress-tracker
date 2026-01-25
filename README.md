@@ -29,7 +29,7 @@ Clone the repository and build the project:
 
 ```bash
 git clone https://github.com/miglioDev/grow-castle-progress-tracker.git
-cd grow-castle-progress-tracker/grow_castle_tracker
+cd grow-castle-progress-tracker
 make run
 ```
 

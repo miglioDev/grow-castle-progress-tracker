@@ -1,10 +1,10 @@
-![Banner](screenshots\banner.jpeg")
+![Banner](screenshots/banner.jpeg)
 
 **A lightweight, efficient command-line tool written in C to track your progress in *Grow Castle***.
 
 ![C Language](https://img.shields.io/badge/Language-C-blue.svg)
 ![MIT License](https://img.shields.io/badge/License-MIT-green.svg)
-![Version](https://img.shields.io/badge/Version-1.2.0-orange.svg)
+![Version](https://img.shields.io/badge/Version-2.0.0-orange.svg)
 
 It allows you to:
 - Track wave progression and Infinity Castle levels
@@ -56,7 +56,7 @@ cd grow_castle_tracker
 ```
 ---
 
-##  How to Use
+## 📖 How to Use
 
 - **Manage Player Data:** Insert, view, or modify wave, leader, heroes, and Infinity Castle statistics
 - **Ratios & Suggestions:** Check whether your upgrades are balanced and efficient

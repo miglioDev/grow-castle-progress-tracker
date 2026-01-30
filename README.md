@@ -1,4 +1,4 @@
-# 🏰 Grow Castle Progress Tracker
+![Banner](screenshots\banner.jpeg")
 
 **A lightweight, efficient command-line tool written in C to track your progress in *Grow Castle***.
 
@@ -56,7 +56,7 @@ cd grow_castle_tracker
 ```
 ---
 
-## 🧭 How to Use
+##  How to Use
 
 - **Manage Player Data:** Insert, view, or modify wave, leader, heroes, and Infinity Castle statistics
 - **Ratios & Suggestions:** Check whether your upgrades are balanced and efficient
@@ -77,7 +77,7 @@ The application is written in **C** and uses simple data structures to manage pl
 
 ---
 
-## 🖼 Features Preview
+##  Features Preview
 
 ### Main Menu
 The central hub for all your tracking needs - easy navigation and clear options.
@@ -86,7 +86,7 @@ The central hub for all your tracking needs - easy navigation and clear options.
 
 ---
 
-### ⚔ Ratio Analysis & Suggestions
+###  Ratio Analysis & Suggestions
 Get detailed information about your current set-up, levels and ratios.
 
 ![Ratio Analysis](screenshots/Screenshot%20_ratio.png)

@@ -11,11 +11,12 @@ void show_main_menu()
     printf(" Grow Castle Progress Tracker \n");
     printf("==============================\n");
     printf("1) Player Data\n");
-    printf("2) Ratio & suggestion\n");
+    printf("2) Ratio & Suggestion\n");
     printf("3) Colony Stats\n");
     printf("4) Progress History\n");
-    printf("5) Export/Import Data\n");
-    printf("6) Exit\n");
+    printf("5) Upgrading Cost\n");
+    printf("6) Export/Import Data\n");
+    printf("7) Exit\n");
     printf("==============================\n");
 }
 
@@ -44,7 +45,7 @@ void show_colony_stats()
 
 void show_progress_history()
 {
-    // buffer for progress data (limit to a reasonable number)
+    // buffer for progress data 
     const int MAX_ENTRIES = 300;
     ProgressData data[MAX_ENTRIES];
     int count = read_progress_history("data/player_data.csv", data, MAX_ENTRIES);
@@ -58,7 +59,20 @@ void show_progress_history()
     draw_progress_graph(data, count, 0);
 }
 
-// Option 5 - Data Import / Export instructions
+//upgrading cost 6
+void how_to_use()
+{
+    printf("In this section you can calculate:\n");
+    printf("The gold required to reach your target level for Castle and Town Archers\n");
+    printf("Choose an option to get started!\n\n");
+
+    printf("1) Castle \n");
+    printf("2) Town archers\n");
+    printf("3) Back to Main Menu\n\n");
+
+}
+
+// Option 6 - Data Import / Export instructions
 void export_import_data()
 {
     printf("\n==============================\n");
@@ -86,5 +100,6 @@ void export_import_data()
     printf(" This project uses plain CSV format for simplicity.\n\n");
 
     printf("==============================\n\n");
-    getchar();  
 }
+
+

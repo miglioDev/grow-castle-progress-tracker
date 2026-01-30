@@ -7,6 +7,7 @@ void manage_player_data();
 void ratio_and_suggestion();
 void show_colony_stats();
 void show_progress_history();
+void how_to_use();
 void export_import_data();
 
 #endif

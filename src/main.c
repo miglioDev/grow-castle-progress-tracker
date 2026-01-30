@@ -24,9 +24,10 @@ float *r_ta = &town_archer_ratio;
 float *r_castle = &castle_ratio;
 
 //colony_stats
-double gold_infinity_town;
 double gold_from_infinity_town = 0;
 
+//upgrading section
+void upgrading_cost();
 
 
 int main()
@@ -40,7 +41,7 @@ int main()
 
     int choice, sub_choice;
 
-    // Infinite-loop  main menu
+    // Main menu 
     while (1)
     {
         show_main_menu(); 
@@ -65,10 +66,8 @@ int main()
 
         case 3:
             show_colony_stats();
-            gold_infinity_town = colony_stats_calculation(&player);
             gold_from_infinity_town = colony_stats_calculation(&player);
 
-                // Recalculate colony ratio before printing
                 colony_ratio = (float)player.infinity_castle_level / player.wave;
 
             stats_print_infinite_town(&player,&colony_ratio,gold_from_infinity_town);
@@ -80,10 +79,14 @@ int main()
             break;
 
         case 5:
-            export_import_data();
+            upgrading_cost();
             break;
 
         case 6:
+            export_import_data();
+            break;
+
+        case 7:
             printf("Exiting program... Goodbye!\n");
             return 0;
 
@@ -114,27 +117,38 @@ void player_data_sub_menu(int sub_choice, Player *p)
 
     if (sub_choice == 1) // Enter Player Info
     {
-        printf("\nEnter your stats:\n");
+        int valid;
 
-        printf("Wave: ");
-        scanf("%d", &p->wave);
+        do 
+        {
+            printf("\nEnter your stats:\n");
 
-        printf("Infinity Castle Level: ");
-        scanf("%d", &p->infinity_castle_level);
+            printf("Wave: ");
+            scanf("%d", &p->wave);
 
-        printf("Leader Level: ");
-        scanf("%d", &p->leader_level);
+            printf("Infinity Castle Level: ");
+            scanf("%d", &p->infinity_castle_level);
 
-        printf("Heroes average level: ");
-        scanf("%d", &p->heroes_avg_level);
+            printf("Leader Level: ");
+            scanf("%d", &p->leader_level);
 
-        printf("Town Archer level: ");
-        scanf("%d", &p->town_archer_level);
+            printf("Heroes average level: ");
+            scanf("%d", &p->heroes_avg_level);
 
-        printf("Castle level: ");
-        scanf("%d", &p->castle_level);
+            printf("Town Archer level: ");
+            scanf("%d", &p->town_archer_level);
 
-        // Register update date
+            printf("Castle level: ");
+            scanf("%d", &p->castle_level);
+
+            valid = (p->wave > 0 && p->infinity_castle_level > 0 && p->leader_level > 0 && p->heroes_avg_level > 0 && p->town_archer_level > 0 && p->castle_level > 0);
+
+            if(!valid) {
+                printf("\nError: All input values must be positive!\n"); }
+        }
+        while(!valid);
+
+        // Register data && update date
         time_t now = time(NULL);
         struct tm *t = localtime(&now);
         strftime(p->last_update, sizeof(p->last_update), "%Y-%m-%d", t);
@@ -205,4 +219,84 @@ void stats_print_infinite_town(Player *p,float *r_colony,double gold_from_infini
     printf("Gold obtained, (Base Infinite Town): %.0f\n",gold_from_infinity_town);
     printf("Gold with lv 20 colony gold skill: %.0f\n",gold_with_xpbuff);
     printf("Gold with Whip + Skill: %.0f\n", gold_with_whip_and_xp);
+}
+
+//upgrading cost   
+void upgrading_cost()
+{
+    how_to_use();
+    int sub_menu,valid;
+    long long A,Z;
+    long double cost = 0.0L;
+
+    const long double K = 1e3L;
+    const long double M = 1e6L;
+    const long double B = 1e9L;
+
+    do
+    {
+        printf("Option: ");
+        if (scanf("%d",&sub_menu) != 1)
+            scanf("%*s");
+
+        valid = (sub_menu == 1 || sub_menu == 2 || sub_menu == 3); 
+        if(!valid) {
+            printf("Error: invalid choice!\n"); }
+    }
+    while(!valid);
+
+    switch(sub_menu)
+    {
+        case 1: 
+            do
+            {
+            printf("Upgrading from level: ");
+            scanf("%lld", &A);
+            printf("To level: ");
+            scanf("%lld", &Z);
+
+            valid = (A < Z && A > 0 && Z > 0);
+
+            if(!valid) {
+                printf("\nError: invalid choice!\n"); }
+            }
+            while(!valid);
+
+            cost = 1250.0L * (long double)(Z-A) * (long double)(Z+A-1);
+            
+            break;
+        
+        case 2:
+            do 
+            {
+            printf("Upgrading from level: ");
+            scanf("%lld", &A);
+            printf("To level: ");
+            scanf("%lld", &Z);
+
+            valid = (A < Z && A > 0 && Z > 0);
+
+            if(!valid) {
+                printf("\nError: invalid choice!\n"); }
+            }
+            while(!valid);
+
+            cost = 500.0L * (long double)(Z - A) * (long double)(Z + A);
+
+            break;
+
+            case 3:
+                return;
+            break;
+    }
+
+    if(cost >= 1e9L) {
+        printf("\nIt will cost you: %.0fM\n", (double)(cost / 1e6L));
+    }
+    else if(cost >= 1e6L) {
+        printf("\nIt will cost you: %.0LfK\n", (double)(cost / 1e3L));
+    }
+    else {
+        printf("\nIt will cost you: %.0Lf\n", (double)cost);
+    }
 }

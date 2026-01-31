@@ -82,21 +82,21 @@ The application is written in **C** and uses simple data structures to manage pl
 ### Main Menu
 The central hub for all your tracking needs - easy navigation and clear options.
 
-![Main Menu](screenshots/Screenshot_menu.png)
+![Main Menu](screenshots/Screenshot_menu.jpeg)
 
 ---
 
 ###  Ratio Analysis & Suggestions
 Get detailed information about your current set-up, levels and ratios.
 
-![Ratio Analysis](screenshots/Screenshot%20_ratio.png)
+![Ratio Analysis](screenshots/Screenshot%20_ratio.jpeg)
 
 ---
 
 ### 📊 Progress Visualization
 Visualize your wave progression over time with clean terminal graphs to track your growth trends.
 
-![Progress Graph](screenshots/Screenshot%20_graph.png)
+![Progress Graph](screenshots/Screenshot%20_graph.jpeg)
 
 ---
 

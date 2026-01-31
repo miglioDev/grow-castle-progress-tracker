@@ -10,6 +10,7 @@ It allows you to:
 - Track wave progression and Infinity Castle levels
 - Calculate efficiency ratios and compare them with recommended upgrade benchmarks
 - Visualize progress history using simple terminal graphs
+- Calculate the gold required to upgrade Castle or Town Archers from a starting level to a target level
 - Save data locally for long-term tracking and analysis
 - Modify previously entered data to keep tracking accurate
 
@@ -62,6 +63,7 @@ cd grow_castle_tracker
 - **Ratios & Suggestions:** Check whether your upgrades are balanced and efficient
 - **Colony Stats:** View gold production and colony efficiency metrics
 - **Progress History:** Visualize your progression over time using terminal graphs
+- **Upgrading Cost:** Shows how much gold is needed to upgrade Castle or Town Archers
 - **Import / Export Data:** Back up your progress or move it between devices
 
 All your data is stored locally inside the `/data` folder using a CSV file and is automatically updated whenever new stats are saved.

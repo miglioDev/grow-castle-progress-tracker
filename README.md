@@ -4,7 +4,7 @@
 
 ![C Language](https://img.shields.io/badge/Language-C-blue.svg)
 ![MIT License](https://img.shields.io/badge/License-MIT-green.svg)
-![Version](https://img.shields.io/badge/Version-2.0.0-orange.svg)
+![Version](https://img.shields.io/badge/Version-2.1.0-orange.svg)
 
 It allows you to:
 - Track wave progression and Infinity Castle levels
@@ -12,7 +12,6 @@ It allows you to:
 - Visualize progress history using simple terminal graphs
 - Calculate the gold required to upgrade Castle or Town Archers from a starting level to a target level
 - Save data locally for long-term tracking and analysis
-- Modify previously entered data to keep tracking accurate
 
 ---
 
@@ -66,7 +65,7 @@ cd grow_castle_tracker
 - **Upgrading Cost:** Shows how much gold is needed to upgrade Castle or Town Archers
 - **Import / Export Data:** Back up your progress or move it between devices
 
-All your data is stored locally inside the `/data` folder using a CSV file and is automatically updated whenever new stats are saved.
+All your data is stored locally inside the `/data` folder using a CSV file and is automatically updated whenever new stats are saved, if needed you can modify previously entered data!
 
 ## Technical Overview
 

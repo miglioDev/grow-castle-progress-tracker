@@ -1,11 +1,36 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>  
+#include <time.h>
+#include <errno.h>
+#include <limits.h>
+#include <string.h>
 #include "../include/ui.h"
 #include "../include/player_data.h"
 #include "../include/calculator.h"
 #include "../include/file_operations.h"
+
+// Safe integer input with validation
+static int safe_input_int(const char *prompt, int *result, int min_val, int max_val) {
+    char buffer[64];
+    char *endptr;
+    long val;
+    
+    printf("%s", prompt);
+    if (!fgets(buffer, sizeof(buffer), stdin)) {
+        return 0;
+    }
+    
+    errno = 0;
+    val = strtol(buffer, &endptr, 10);
+    
+    if (errno != 0 || endptr == buffer || val < min_val || val > max_val) {
+        return 0;
+    }
+    
+    *result = (int)val;
+    return 1;
+}
 
 //prototype for submenu function
 void player_data_sub_menu(int sub_choice, Player *p);
@@ -45,15 +70,21 @@ int main()
     while (1)
     {
         show_main_menu(); 
-        printf("Select an option: ");
-        scanf("%d", &choice);
+        
+        if (!safe_input_int("Select an option: ", &choice, 1, 7)) {
+            printf("Invalid input! Please enter a number between 1 and 7.\n");
+            continue;
+        }
 
         switch (choice)
         {
         case 1: // Player Data Management
             manage_player_data(); // show the submenu UI
-            printf("Enter your choice: ");
-            scanf("%d", &sub_choice);
+            
+            if (!safe_input_int("Enter your choice: ", &sub_choice, 1, 3)) {
+                printf("Invalid input! Please enter a number between 1 and 3.\n");
+                break;
+            }
 
             // Call the submenu function passing player pointer
             player_data_sub_menu(sub_choice, &player);
@@ -95,9 +126,8 @@ int main()
             break;
         }
 
-        // Pause before showing the main menu again
+        // Pause for menu again
         printf("\nPress ENTER to continue...");
-        getchar(); 
         getchar();
     }
 
@@ -123,30 +153,45 @@ void player_data_sub_menu(int sub_choice, Player *p)
         {
             printf("\nEnter your stats:\n");
 
-            printf("Wave: ");
-            scanf("%d", &p->wave);
+            valid = safe_input_int("Wave: ", &p->wave, 1, INT_MAX);
+            if (!valid) {
+                printf("Error: invalid input. Please enter a positive number.\n");
+                continue;
+            }
 
-            printf("Infinity Castle Level: ");
-            scanf("%d", &p->infinity_castle_level);
+            valid = safe_input_int("Infinity Castle Level: ", &p->infinity_castle_level, 1, INT_MAX);
+            if (!valid) {
+                printf("Error: invalid input. Please enter a positive number.\n");
+                continue;
+            }
 
-            printf("Leader Level: ");
-            scanf("%d", &p->leader_level);
+            valid = safe_input_int("Leader Level: ", &p->leader_level, 1, INT_MAX);
+            if (!valid) {
+                printf("Error: invalid input. Please enter a positive number.\n");
+                continue;
+            }
 
-            printf("Heroes average level: ");
-            scanf("%d", &p->heroes_avg_level);
+            valid = safe_input_int("Heroes average level: ", &p->heroes_avg_level, 1, INT_MAX);
+            if (!valid) {
+                printf("Error: invalid input. Please enter a positive number.\n");
+                continue;
+            }
 
-            printf("Town Archer level: ");
-            scanf("%d", &p->town_archer_level);
+            valid = safe_input_int("Town Archer level: ", &p->town_archer_level, 1, INT_MAX);
+            if (!valid) {
+                printf("Error: invalid input. Please enter a positive number.\n");
+                continue;
+            }
 
-            printf("Castle level: ");
-            scanf("%d", &p->castle_level);
+            valid = safe_input_int("Castle level: ", &p->castle_level, 1, INT_MAX);
+            if (!valid) {
+                printf("Error: invalid input. Please enter a positive number.\n");
+                continue;
+            }
 
-            valid = (p->wave > 0 && p->infinity_castle_level > 0 && p->leader_level > 0 && p->heroes_avg_level > 0 && p->town_archer_level > 0 && p->castle_level > 0);
-
-            if(!valid) {
-                printf("\nError: All input values must be positive!\n"); }
+            break;
         }
-        while(!valid);
+        while(1);
 
         // Register data && update date
         time_t now = time(NULL);
@@ -156,7 +201,9 @@ void player_data_sub_menu(int sub_choice, Player *p)
         printf("\nData saved successfully! Last update: %s\n", p->last_update);
 
         // NEW: Save data to file
-        save_player_data(p);
+        if (!save_player_data(p)) {
+            printf("Warning: Failed to save player data to file.\n");
+        }
     }
     else if (sub_choice == 2) // View Player Info
     {
@@ -186,7 +233,7 @@ void analyze_player_data(Player *p,float *r_hero,float *r_leader,float *r_colony
     (*r_castle) = (float)p->castle_level/p->wave;
 
     // stats print order
-    // your wave, subject,  your ratio, recommanded ratio, corrisponding level to the recommanded ratio?
+    // wave, subject,  your ratio, recommanded ratio,
     printf("Wave:\tsubject:\tyour ratio:\t\trecommanded ratio:\t\n");
     
     printf("%d\t main hero\t%f\t\t ratio: 0.02-0.04\n",p->wave,*r_hero);
@@ -221,27 +268,56 @@ void stats_print_infinite_town(Player *p,float *r_colony,double gold_from_infini
     printf("Gold with Whip + Skill: %.0f\n", gold_with_whip_and_xp);
 }
 
+// safe long long input with validation
+static int safe_input_long_long(const char *prompt, long long *result, long long min_val, long long max_val) {
+    char buffer[64];
+    char *endptr;
+    long long val;
+    
+    printf("%s", prompt);
+    if (!fgets(buffer, sizeof(buffer), stdin)) {
+        return 0;
+    }
+    
+    errno = 0;
+    val = strtoll(buffer, &endptr, 10);
+    
+    if (errno != 0 || endptr == buffer || val < min_val || val > max_val) {
+        return 0;
+    }
+    
+    *result = val;
+    return 1;
+}
+
 //upgrading cost   
 void upgrading_cost()
 {
     how_to_use();
-    int sub_menu,valid;
-    long long A,Z;
-    long double cost = 0.0L;
-
-    const long double K = 1e3L;
-    const long double M = 1e6L;
-    const long double B = 1e9L;
+    int sub_menu, valid = 0;
+    long long A, Z;
+    unsigned long long cost = 0ULL;
 
     do
     {
+        char buffer[64];
         printf("Option: ");
-        if (scanf("%d",&sub_menu) != 1)
-            scanf("%*s");
-
-        valid = (sub_menu == 1 || sub_menu == 2 || sub_menu == 3); 
-        if(!valid) {
-            printf("Error: invalid choice!\n"); }
+        if (!fgets(buffer, sizeof(buffer), stdin)) {
+            printf("Error reading input.\n");
+            continue;
+        }
+        
+        char *endptr;
+        errno = 0;
+        long val = strtol(buffer, &endptr, 10);
+        
+        if (errno != 0 || endptr == buffer || val < 1 || val > 3) {
+            printf("Error: invalid choice! Please enter 1, 2, or 3.\n");
+            continue;
+        }
+        
+        sub_menu = (int)val;
+        valid = 1;
     }
     while(!valid);
 
@@ -250,38 +326,48 @@ void upgrading_cost()
         case 1: 
             do
             {
-            printf("Upgrading from level: ");
-            scanf("%lld", &A);
-            printf("To level: ");
-            scanf("%lld", &Z);
+                if (!safe_input_long_long("Upgrading from level: ", &A, 1, LLONG_MAX)) {
+                    printf("Error: invalid input.\n");
+                    continue;
+                }
+                if (!safe_input_long_long("To level: ", &Z, 1, LLONG_MAX)) {
+                    printf("Error: invalid input.\n");
+                    continue;
+                }
 
-            valid = (A < Z && A > 0 && Z > 0);
+                valid = (A < Z && A > 0 && Z > 0);
 
-            if(!valid) {
-                printf("\nError: invalid choice!\n"); }
+                if(!valid) {
+                    printf("\nError: 'From level' must be less than 'To level' and both must be positive!\n");
+                }
             }
             while(!valid);
 
-            cost = 1250.0L * (long double)(Z-A) * (long double)(Z+A-1);
+            cost = 1250ULL * (unsigned long long)(Z - A) * (unsigned long long)(Z + A - 1);
             
             break;
         
         case 2:
             do 
             {
-            printf("Upgrading from level: ");
-            scanf("%lld", &A);
-            printf("To level: ");
-            scanf("%lld", &Z);
+                if (!safe_input_long_long("Upgrading from level: ", &A, 1, LLONG_MAX)) {
+                    printf("Error: invalid input.\n");
+                    continue;
+                }
+                if (!safe_input_long_long("To level: ", &Z, 1, LLONG_MAX)) {
+                    printf("Error: invalid input.\n");
+                    continue;
+                }
 
-            valid = (A < Z && A > 0 && Z > 0);
+                valid = (A < Z && A > 0 && Z > 0);
 
-            if(!valid) {
-                printf("\nError: invalid choice!\n"); }
+                if(!valid) {
+                    printf("\nError: 'From level' must be less than 'To level' and both must be positive!\n");
+                }
             }
             while(!valid);
 
-            cost = 500.0L * (long double)(Z - A) * (long double)(Z + A);
+            cost = 500ULL * (unsigned long long)(Z - A) * (unsigned long long)(Z + A);
 
             break;
 
@@ -290,13 +376,11 @@ void upgrading_cost()
             break;
     }
 
-    if(cost >= 1e9L) {
-        printf("\nIt will cost you: %.0fM\n", (double)(cost / 1e6L));
-    }
-    else if(cost >= 1e6L) {
-        printf("\nIt will cost you: %.0LfK\n", (double)(cost / 1e3L));
-    }
-    else {
-        printf("\nIt will cost you: %.0Lf\n", (double)cost);
+    if (cost >= 1000000ULL) {
+        printf("\nIt will cost you: %lluM\n", cost / 1000000ULL);
+    } else if (cost >= 1000ULL) {
+        printf("\nIt will cost you: %lluK\n", cost / 1000ULL);
+    } else {
+        printf("\nIt will cost you: %llu\n", cost);
     }
 }

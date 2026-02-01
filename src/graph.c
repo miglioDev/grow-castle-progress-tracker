@@ -36,27 +36,23 @@ static int get_ratio_scale(float ratio) {
 // Calculate bar length based on ratio and scale type
 static int calculate_bar_length(float ratio, int scale_type, int graph_area) {
     float display_ratio = ratio;
-    int capped = 0;
     
     switch (scale_type) {
         case 0: // Micro scale: 0.0 to 0.01
             if (ratio > MAX_RATIO_MICRO) {
                 display_ratio = MAX_RATIO_MICRO;
-                capped = 1;
             }
             return (int)((display_ratio / MAX_RATIO_MICRO) * (float)graph_area + 0.5f);
             
         case 1: // Low scale: 0.01 to 1.0
             if (ratio > MAX_RATIO_LOW) {
                 display_ratio = MAX_RATIO_LOW;
-                capped = 1;
             }
             return (int)((display_ratio / MAX_RATIO_LOW) * (float)graph_area + 0.5f);
             
         case 2: // High scale: 1.0 to 20.0
             if (ratio > MAX_RATIO_HIGH) {
                 display_ratio = MAX_RATIO_HIGH;
-                capped = 1;
             }
             return (int)(((display_ratio - RATIO_LOW_THRESHOLD) / 
                          (MAX_RATIO_HIGH - RATIO_LOW_THRESHOLD)) * (float)graph_area + 0.5f);
@@ -96,16 +92,15 @@ void draw_progress_graph(const ProgressData *data, int count, int terminal_width
         float ratio = 0.0f;
         if (d->wave > 0) ratio = (float)d->infinity_castle_level / (float)d->wave;
 
-        // Determine scale type and calculate bar length
+        // Det scale type and calculate bar length
         int scale_type = get_ratio_scale(ratio);
         int capped = 0;
-        float display_ratio = ratio;
         
         // Check for capping
         switch (scale_type) {
-            case 0: if (ratio > MAX_RATIO_MICRO) { display_ratio = MAX_RATIO_MICRO; capped = 1; } break;
-            case 1: if (ratio > MAX_RATIO_LOW) { display_ratio = MAX_RATIO_LOW; capped = 1; } break;
-            case 2: if (ratio > MAX_RATIO_HIGH) { display_ratio = MAX_RATIO_HIGH; capped = 1; } break;
+            case 0: if (ratio > MAX_RATIO_MICRO) { capped = 1; } break;
+            case 1: if (ratio > MAX_RATIO_LOW) { capped = 1; } break;
+            case 2: if (ratio > MAX_RATIO_HIGH) { capped = 1; } break;
         }
         
         int bar_len = calculate_bar_length(ratio, scale_type, graph_area);

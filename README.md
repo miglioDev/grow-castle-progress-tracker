@@ -103,7 +103,7 @@ Visualize your wave progression over time with clean terminal graphs to track yo
 
 ## Feedback & Contributions
 
-Contributions, bug reports, and suggestions are welcome.
+Contributions, bug reports, and suggestions are welcome!
 
 You can:
 - Open an issue on GitHub for bugs or feature requests

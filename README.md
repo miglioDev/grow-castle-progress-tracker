@@ -4,7 +4,7 @@
 
 ![C Language](https://img.shields.io/badge/Language-C-blue.svg)
 ![MIT License](https://img.shields.io/badge/License-MIT-green.svg)
-![Version](https://img.shields.io/badge/Version-2.1.0-orange.svg)
+![Version](https://img.shields.io/badge/Version-2.2.0-orange.svg)
 
 It allows you to:
 - Track wave progression and Infinity Castle levels
@@ -62,7 +62,7 @@ cd grow_castle_tracker
 - **Ratios & Suggestions:** Check whether your upgrades are balanced and efficient
 - **Colony Stats:** View gold production and colony efficiency metrics
 - **Progress History:** Visualize your progression over time using terminal graphs
-- **Upgrading Cost:** Shows how much gold is needed to upgrade Castle or Town Archers
+- **Upgrading Cost:** Shows how much gold is needed to upgrade Castle, Town Archers or Hero, Leader and Tower
 - **Import / Export Data:** Back up your progress or move it between devices
 
 All your data is stored locally inside the `/data` folder using a CSV file and is automatically updated whenever new stats are saved, if needed you can modify previously entered data!

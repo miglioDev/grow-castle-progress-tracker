@@ -63,12 +63,13 @@ void show_progress_history()
 void how_to_use()
 {
     printf("In this section you can calculate:\n");
-    printf("The gold required to reach your target level for Castle and Town Archers\n");
+    printf("The gold required to reach your target level for Castle, Town Archers or Hero Leader and Tower\n");
     printf("Choose an option to get started!\n\n");
 
     printf("1) Castle \n");
     printf("2) Town archers\n");
-    printf("3) Back to Main Menu\n\n");
+    printf("3) Hero, Leader and Tower\n");
+    printf("4) Back to Main Menu\n\n");
 
 }
 

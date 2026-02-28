@@ -225,6 +225,7 @@ void player_data_sub_menu(int sub_choice, Player *p)
 // -- Ratio & suggestion -- 
 void analyze_player_data(Player *p,float *r_hero,float *r_leader,float *r_colony,float *r_ta,float *r_castle)
 {
+    long int target_ratio1,target_ratio2;
     //all ratio 
     (*r_hero) = (float)p->heroes_avg_level/ p->wave;
     (*r_leader) = (float)p->leader_level/ p->wave;
@@ -232,15 +233,23 @@ void analyze_player_data(Player *p,float *r_hero,float *r_leader,float *r_colony
     (*r_ta) = (float)p->town_archer_level/p->wave;
     (*r_castle) = (float)p->castle_level/p->wave;
 
-    // stats print order
-    // wave, subject,  your ratio, recommanded ratio,
-    printf("Wave:\tsubject:\tyour ratio:\t\trecommanded ratio:\t\n");
+    // stats print order:
+    printf("Wave:\t\tsubject:\tyour ratio:\t\trecommanded ratio:\tcorresponding level for target ratio:\n");
     
-    printf("%d\t main hero\t%f\t\t ratio: 0.02-0.04\n",p->wave,*r_hero);
-    printf("%d\t leader:\t%f\t\t ratio: 0.03\n",p->wave,*r_leader);
-    printf("%d\t Infinite C.:\t%f\t\tAs high as possible!\n",p->wave,*r_colony);
-    printf("%d\t Town Archer:\t%f\t\t ratio: 0.5\n", p->wave, town_archer_ratio);
-    printf("%d\t Castle:\t%f\t\t ratio: 0.25\n", p->wave, castle_ratio);
+    target_ratio1 = p->wave*0.2;
+    target_ratio2 = p->wave*0.4;
+    printf("%d\t\t main hero\t%f\t\t ratio: 0.02-0.04\t%ld-%ld\n",p->wave,*r_hero,target_ratio1,target_ratio2);
+
+    target_ratio1 = p->wave*0.3;
+    printf("%d\t\t leader:\t%f\t\t ratio: 0.03\t\t%ld\n",p->wave,*r_leader,target_ratio1);
+
+    printf("%d\t\t Infinite C.:\t%f\t\tAs high as possible!\t--\n",p->wave,*r_colony);
+
+    target_ratio1 = p->wave*0.5;
+    printf("%d\t\t Town Archer:\t%f\t\t ratio: 0.5\t\t%ld\n", p->wave, town_archer_ratio,target_ratio1);
+
+    target_ratio1 = p->wave*0.25;
+    printf("%d\t\t Castle:\t%f\t\t ratio: 0.25\t\t%ld\n", p->wave, castle_ratio,target_ratio1);
 
 }
 
@@ -297,6 +306,8 @@ void upgrading_cost()
     int sub_menu, valid = 0;
     long long A, Z;
     unsigned long long cost = 0ULL;
+    double display_cost;
+    const char* unit;
 
     do
     {
@@ -311,8 +322,8 @@ void upgrading_cost()
         errno = 0;
         long val = strtol(buffer, &endptr, 10);
         
-        if (errno != 0 || endptr == buffer || val < 1 || val > 3) {
-            printf("Error: invalid choice! Please enter 1, 2, or 3.\n");
+        if (errno != 0 || endptr == buffer || val < 1 || val > 4) {
+            printf("Error: invalid choice! Please enter 1, 2, 3 or 4.\n");
             continue;
         }
         
@@ -371,16 +382,73 @@ void upgrading_cost()
 
             break;
 
-            case 3:
+        case 3: 
+            do
+            {
+                if (!safe_input_long_long("Upgrading from level: ", &A, 1, LLONG_MAX)) {
+                    printf("Error: invalid input.\n");
+                    continue;
+                }
+                if (!safe_input_long_long("To level: ", &Z, 1, LLONG_MAX)) {
+                    printf("Error: invalid input.\n");
+                    continue;
+                }
+
+                valid = (A < Z && A > 0 && Z > 0);
+
+                if(!valid) {
+                    printf("\nError: 'From level' must be less than 'To level' and both must be positive!\n");
+                }
+            }
+            while(!valid);
+
+            long long current = A;
+
+            if (current < 5000) {
+            long long limit = (Z < 5000) ? Z : 5000;
+           
+            unsigned long long limit_sq = (unsigned long long)limit * limit;
+            unsigned long long current_sq = (unsigned long long)current * current;
+            cost += 1500ULL * (limit_sq - current_sq);
+            current = limit;
+            }
+        
+            if (current < 10000 && current < Z) {
+                long long limit = (Z < 10000) ? Z : 10000;
+                unsigned long long limit_sq = (unsigned long long)limit * limit;
+                unsigned long long current_sq = (unsigned long long)current * current;
+                cost += 2000ULL * (limit_sq - current_sq);
+                current = limit;
+            }
+            
+            if (current < Z) {
+                unsigned long long Z_sq = (unsigned long long)Z * Z;
+                unsigned long long current_sq = (unsigned long long)current * current;
+                cost += 2500ULL * (Z_sq - current_sq);
+            }
+            
+            break;
+
+            case 4:
                 return;
             break;
     }
 
-    if (cost >= 1000000ULL) {
-        printf("\nIt will cost you: %lluM\n", cost / 1000000ULL);
+    if (cost >= 1000000000000ULL) { //(10^12)
+        display_cost = (double)cost / 1000000000000.0;
+        unit = "trillion";
+    } else if (cost >= 1000000000ULL) { //(10^9)
+        display_cost = (double)cost / 1000000000.0;
+        unit = "billion";
+    } else if (cost >= 1000000ULL) { 
+        display_cost = (double)cost / 1000000.0;
+        unit = "million";
     } else if (cost >= 1000ULL) {
-        printf("\nIt will cost you: %lluK\n", cost / 1000ULL);
+        display_cost = (double)cost / 1000.0;
+        unit = "thousand";
     } else {
-        printf("\nIt will cost you: %llu\n", cost);
-    }
+        display_cost = (double)cost;
+        unit = ""; }
+
+    printf("\nIt will cost you: %.2f %s gold\n",display_cost, unit);
 }

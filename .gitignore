@@ -31,7 +31,6 @@
 *.hex
 
 # linux binaries and build folders
-grow-castle-progress-tracker
 a.out
 bin/
 

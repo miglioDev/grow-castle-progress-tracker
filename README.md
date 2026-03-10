@@ -54,6 +54,10 @@ After building the project, you can start it anytime with:
 cd grow_castle_tracker
 ./bin/grow_castle_tool
 ```
+Or simply use: 
+```bash
+make run
+```
 ---
 
 ## 📖 How to Use

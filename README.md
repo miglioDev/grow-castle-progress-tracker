@@ -6,7 +6,12 @@
 ![MIT License](https://img.shields.io/badge/License-MIT-green.svg)
 ![Version](https://img.shields.io/badge/Version-2.2.0-orange.svg)
 
-It allows you to:
+## Why?
+
+Most players track their progress using spreadsheets
+I wanted a more reliable and structured way to track progress, calculate ratios, and analyze long-term growth — so I built this tool
+
+## Features:
 - Track wave progression and Infinity Castle levels
 - Calculate efficiency ratios and compare them with recommended upgrade benchmarks
 - Visualize progress history using simple terminal graphs
@@ -60,7 +65,7 @@ make run
 ```
 ---
 
-## 📖 How to Use
+##  How to Use
 
 - **Manage Player Data:** Insert, view, or modify wave, leader, heroes, and Infinity Castle statistics
 - **Ratios & Suggestions:** Check whether your upgrades are balanced and efficient
@@ -116,13 +121,13 @@ You can:
 
 ---
 
-## 🧾 License
+##  License
 
 This project is released under the **MIT License**.
 
 [![MIT License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-You're free to modify, distribute, and build upon it — just give credit.
+You are free to use, modify, and distribute this software under the terms of the MIT License.
 
 ---
 

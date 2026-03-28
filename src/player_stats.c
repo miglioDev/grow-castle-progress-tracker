@@ -26,9 +26,9 @@ void analyze_player_data(Player *p, float *r_hero, float *r_leader, float *r_col
     gap = p->town_archer_level - target_ratio1;
     printf("%d\t\t Town Archer:\t%f\t\t ratio: 0.05\t\t%ld\n", p->wave, *r_ta, gap);
 
-    target_ratio1 = p->wave * 0.2;
+    target_ratio1 = p->wave * 0.06;
     gap = p->castle_level - target_ratio1;
-    printf("%d\t\t Castle:\t%f\t\t ratio: 0.2\t\t%ld\n", p->wave, *r_castle, gap);
+    printf("%d\t\t Castle:\t%f\t\t ratio: 0.06\t\t%ld\n", p->wave, *r_castle, gap);
 }
 
 double colony_stats_calculation(Player *p)

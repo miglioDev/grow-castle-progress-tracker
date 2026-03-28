@@ -55,23 +55,11 @@ void show_progress_history()
         return;
     }
 
-    // draw graph; pass 0 for auto-detect terminal width
+    // draw graph; pass 0 for auto-detect (terminal width)
     draw_progress_graph(data, count, 0);
 }
 
-//upgrading cost 6
-void how_to_use()
-{
-    printf("In this section you can calculate:\n");
-    printf("The gold required to reach your target level for Castle, Town Archers or Hero Leader and Tower\n");
-    printf("Choose an option to get started!\n\n");
-
-    printf("1) Castle \n");
-    printf("2) Town archers\n");
-    printf("3) Hero, Leader and Tower\n");
-    printf("4) Back to Main Menu\n\n");
-
-}
+//upgrading cost how to use on file upgrading.c
 
 // Option 6 - Data Import / Export instructions
 void export_import_data()

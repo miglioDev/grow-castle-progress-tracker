@@ -26,14 +26,14 @@ static int detect_terminal_width(void) {
     return DEFAULT_TERM_WIDTH;
 }
 
-// Determine which scale 
+// Scale det 
 static int get_ratio_scale(float ratio) {
     if (ratio < RATIO_MICRO_THRESHOLD) return 0; // Micro scale
     if (ratio < RATIO_LOW_THRESHOLD) return 1;   // Low scale
     return 2;                                    // High scale
 }
 
-// Calculate bar length based on ratio and scale type
+// Calc. bar length based on ratio and scale type
 static int calculate_bar_length(float ratio, int scale_type, int graph_area) {
     float display_ratio = ratio;
     
@@ -92,7 +92,6 @@ void draw_progress_graph(const ProgressData *data, int count, int terminal_width
         float ratio = 0.0f;
         if (d->wave > 0) ratio = (float)d->infinity_castle_level / (float)d->wave;
 
-        // Det scale type and calculate bar length
         int scale_type = get_ratio_scale(ratio);
         int capped = 0;
         
@@ -123,10 +122,10 @@ void draw_progress_graph(const ProgressData *data, int count, int terminal_width
             // Micro 
             printf(" %8.4f", ratio);
         } else if (scale_type == 1) {
-            // Low scale: show standard precision
+            // Low 
             printf(" %8.4f", ratio);
         } else {
-            // High scale: show standard precision
+            // High
             printf(" %8.4f", ratio);
         }
 

@@ -141,7 +141,7 @@ int read_progress_history(const char *filename, ProgressData *out, int max_entri
     char line[512];
     int count = 0;
 
-    // read line by line, parse CSV
+    // read line by line (parse CSV)
     while (fgets(line, sizeof(line), f) && count < max_entries) {
 
         size_t L = strlen(line);

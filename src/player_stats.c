@@ -12,23 +12,23 @@ void analyze_player_data(Player *p, float *r_hero, float *r_leader, float *r_col
 
     printf("Wave:\t\tsubject:\tyour ratio:\t\trecommanded ratio:\ttarget/gap\n");
 
-    target_ratio1 = p->wave * 0.2;
-    target_ratio2 = p->wave * 0.4;
+    target_ratio1 = p->wave * 0.02;
+    target_ratio2 = p->wave * 0.04;
     printf("%d\t\t Main hero\t%f\t\t ratio: 0.02-0.04\t%ld-%ld\n", p->wave, *r_hero, target_ratio1, target_ratio2);
 
-    target_ratio1 = p->wave * 0.3;
+    target_ratio1 = p->wave * 0.03;
     gap = p->leader_level - target_ratio1;
     printf("%d\t\t Leader:\t%f\t\t ratio: 0.03\t\t%ld\n", p->wave, *r_leader, gap);
 
     printf("%d\t\t Infinite C.:\t%f\t\tas high as possible!\t--\n", p->wave, *r_colony);
 
-    target_ratio1 = p->wave * 0.5;
+    target_ratio1 = p->wave * 0.05;
     gap = p->town_archer_level - target_ratio1;
-    printf("%d\t\t Town Archer:\t%f\t\t ratio: 0.5\t\t%ld\n", p->wave, *r_ta, gap);
+    printf("%d\t\t Town Archer:\t%f\t\t ratio: 0.05\t\t%ld\n", p->wave, *r_ta, gap);
 
-    target_ratio1 = p->wave * 0.25;
+    target_ratio1 = p->wave * 0.2;
     gap = p->castle_level - target_ratio1;
-    printf("%d\t\t Castle:\t%f\t\t ratio: 0.25\t\t%ld\n", p->wave, *r_castle, gap);
+    printf("%d\t\t Castle:\t%f\t\t ratio: 0.2\t\t%ld\n", p->wave, *r_castle, gap);
 }
 
 double colony_stats_calculation(Player *p)

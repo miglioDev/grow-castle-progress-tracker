@@ -101,6 +101,9 @@ Get detailed information about your current set-up, levels and ratios.
 
 ![Ratio Analysis](screenshots/Screenshot%20_ratio.jpeg)
 
+On the right, the Target/Gap value indicates your position relative to the ideal ratio:
+a positive number means you exceed the target, while a negative number means you are below it.
+
 ---
 
 ### 📊 Progress Visualization

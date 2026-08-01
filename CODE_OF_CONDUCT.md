@@ -1,33 +1,7 @@
 # Code of Conduct
 
-## Our Goal
+This project is a personal tool that I created and shared on GitHub.
 
-This project aims to be useful, open, friendly, and collaborative.  
-Everyone is welcome, as long as interactions remain respectful and constructive.
+I welcome feedback, suggestions, and contributions. Please keep discussions respectful and constructive so everyone can enjoy participating in the project.
 
-## Expected Behavior
-
-- Be kind, respectful, and professional
-- Give constructive feedback and accept it gracefully
-- Focus on improving the project, not on personal disputes
-- Assume good intentions from others
-
-## Unacceptable Behavior
-
-- Harassment, discrimination, or offensive language
-- Personal attacks, trolling, or disruptive behavior
-- Any conduct that creates a hostile or unwelcoming environment
-
-## Scope
-
-This Code of Conduct applies to all project spaces, including issues, pull requests,
-discussions, and other project-related communication.
-
-## Enforcement
-
-The project maintainer may take appropriate action in response to unacceptable behavior,
-including warnings or removal from the project.
-
----
-
-Be respectful. Be constructive. Build cool things together.
+Thank you for helping improve the tool and making it more useful for the community!

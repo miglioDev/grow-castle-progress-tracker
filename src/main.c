@@ -15,10 +15,13 @@
 
 //prototype for submenu function
 void player_data_sub_menu(int sub_choice, Player *p);
+void add_custom_hero_flow(void);
+void show_custom_heroes(void);
+void edit_recommended_ratios(Player *p);
+void edit_custom_heroes(void);
 
 //ratio stats variable
-float hero_ratio, colony_ratio, leader_ratio, town_archer_ratio, castle_ratio;
-float *r_hero = &hero_ratio;
+float colony_ratio, leader_ratio, town_archer_ratio, castle_ratio;
 float *r_colony = &colony_ratio;
 float *r_leader = &leader_ratio;
 float *r_ta = &town_archer_ratio;
@@ -31,6 +34,11 @@ double gold_from_infinity_town = 0;
 int main()
 {
     Player player = {0}; 
+    player.recommended_ratios = (RecommendedRatios){
+        DEFAULT_LEADER_RATIO,
+        DEFAULT_TOWN_ARCHER_RATIO,
+        DEFAULT_CASTLE_RATIO
+    };
     if (load_last_player_data(&player)) {
     printf("[Loaded last saved player data: %s, wave=%d]\n", player.last_update, player.wave);
 } else {
@@ -44,8 +52,8 @@ int main()
     {
         show_main_menu(); 
         
-        if (!safe_input_int("Select an option: ", &choice, 1, 7)) {
-            printf("Invalid input! Please enter a number between 1 and 7.\n");
+        if (!safe_input_int("Select an option: ", &choice, 1, 8)) {
+            printf("Invalid input! Please enter a number between 1 and 8.\n");
             continue;
         }
 
@@ -65,7 +73,15 @@ int main()
 
         case 2:
             ratio_and_suggestion();
-            analyze_player_data(&player,&hero_ratio,&leader_ratio,&colony_ratio,&town_archer_ratio,&castle_ratio);
+            analyze_player_data(&player,&leader_ratio,&colony_ratio,&town_archer_ratio,&castle_ratio);
+            {
+                int edit_choice = 0;
+                if (safe_input_int("Edit recommended ratios or custom heroes? 1=Yes, 0=No: ", &edit_choice, 0, 1) && edit_choice == 1) {
+                    edit_recommended_ratios(&player);
+                    edit_custom_heroes();
+                    analyze_player_data(&player,&leader_ratio,&colony_ratio,&town_archer_ratio,&castle_ratio);
+                }
+            }
             break;
 
         case 3:
@@ -91,6 +107,10 @@ int main()
             break;
 
         case 7:
+            add_custom_hero_flow();
+            break;
+
+        case 8:
             printf("Exiting program... Goodbye!\n");
             return 0;
 
@@ -108,6 +128,117 @@ int main()
 
 
 // -- Player Data Sub-Menu Section --
+void add_custom_hero_flow(void)
+{
+    CustomHero hero;
+    char name[64] = {0};
+    float target_ratio = 0.0f;
+    int level = 0;
+
+    printf("\n=== Add Custom Hero ===\n");
+    if (!safe_input_string("Hero name: ", name, sizeof(name))) {
+        printf("Invalid hero name.\n");
+        return;
+    }
+
+    if (!safe_input_float("Desired target ratio (e.g. 0.04): ", &target_ratio, 0.001f, 10.0f)) {
+        printf("Invalid target ratio.\n");
+        return;
+    }
+
+    if (!safe_input_int("Current level: ", &level, 1, INT_MAX)) {
+        printf("Invalid level.\n");
+        return;
+    }
+
+    memset(&hero, 0, sizeof(hero));
+    snprintf(hero.name, sizeof(hero.name), "%s", name);
+    hero.target_ratio = target_ratio;
+    hero.level = level;
+
+    if (!save_custom_hero(&hero)) {
+        printf("Warning: Failed to save custom hero.\n");
+    } else {
+        printf("Custom hero saved successfully.\n");
+    }
+}
+
+void edit_recommended_ratios(Player *p)
+{
+    float leader_ratio_value = p->recommended_ratios.leader;
+    float town_archer_ratio_value = p->recommended_ratios.town_archer;
+    float castle_ratio_value = p->recommended_ratios.castle;
+
+    printf("\n=== Edit Recommended Ratios ===\n");
+    if (!safe_input_float("Leader ratio: ", &leader_ratio_value, 0.0001f, 10.0f) ||
+        !safe_input_float("Town Archer ratio: ", &town_archer_ratio_value, 0.0001f, 10.0f) ||
+        !safe_input_float("Castle ratio: ", &castle_ratio_value, 0.0001f, 10.0f)) {
+        printf("Invalid ratio. No changes were saved.\n");
+        return;
+    }
+
+    p->recommended_ratios.leader = leader_ratio_value;
+    p->recommended_ratios.town_archer = town_archer_ratio_value;
+    p->recommended_ratios.castle = castle_ratio_value;
+
+    time_t now = time(NULL);
+    struct tm *t = localtime(&now);
+    strftime(p->last_update, sizeof(p->last_update), "%Y-%m-%d", t);
+
+    if (save_player_data(p)) {
+        printf("Recommended ratios saved successfully.\n");
+    } else {
+        printf("Warning: Failed to save recommended ratios.\n");
+    }
+}
+
+void edit_custom_heroes(void)
+{
+    CustomHero heroes[32];
+    int hero_count = load_custom_heroes(heroes, 32);
+    if (hero_count <= 0) {
+        return;
+    }
+
+    printf("\n=== Edit Custom Hero Ratios ===\n");
+    for (int i = 0; i < hero_count; ++i) {
+        printf("%d) %s | target ratio: %.4f | level: %d\n", i + 1, heroes[i].name, heroes[i].target_ratio, heroes[i].level);
+    }
+
+    int hero_choice = 0;
+    if (!safe_input_int("Select a hero to edit (0 to skip): ", &hero_choice, 0, hero_count) || hero_choice == 0) {
+        return;
+    }
+
+    CustomHero *hero = &heroes[hero_choice - 1];
+    if (!safe_input_float("Target ratio: ", &hero->target_ratio, 0.0001f, 10.0f) ||
+        !safe_input_int("Current level: ", &hero->level, 1, INT_MAX)) {
+        printf("Invalid custom hero value. No changes were saved.\n");
+        return;
+    }
+
+    if (save_custom_heroes(heroes, hero_count)) {
+        printf("Custom hero saved successfully.\n");
+    } else {
+        printf("Warning: Failed to save custom heroes.\n");
+    }
+}
+
+void show_custom_heroes(void)
+{
+    CustomHero heroes[32];
+    int count = load_custom_heroes(heroes, 32);
+    if (count <= 0) {
+        printf("No custom heroes saved yet.\n");
+        return;
+    }
+
+    printf("\n=== Custom Heroes ===\n");
+    for (int i = 0; i < count; ++i) {
+        printf("%d) %s | target ratio: %.4f | level: %d\n", i + 1, heroes[i].name, heroes[i].target_ratio, heroes[i].level);
+    }
+}
+
 void player_data_sub_menu(int sub_choice, Player *p)
 {
     if (sub_choice == 3)
@@ -138,12 +269,6 @@ void player_data_sub_menu(int sub_choice, Player *p)
             }
 
             valid = safe_input_int("Leader Level: ", &p->leader_level, 1, INT_MAX);
-            if (!valid) {
-                printf("Error: invalid input. Please enter a positive number.\n");
-                continue;
-            }
-
-            valid = safe_input_int("Heroes average level: ", &p->heroes_avg_level, 1, INT_MAX);
             if (!valid) {
                 printf("Error: invalid input. Please enter a positive number.\n");
                 continue;
@@ -183,9 +308,9 @@ void player_data_sub_menu(int sub_choice, Player *p)
         printf("Wave: %d\n", p->wave);
         printf("Infinity Castle Level: %d\n", p->infinity_castle_level);
         printf("Leader Level: %d\n", p->leader_level);
-        printf("Heroes average level: %d\n", p->heroes_avg_level);
         printf("Last update: %s\n", p->last_update);
         printf("Town Archer Level:%d\n", p->town_archer_level);
         printf("Castle Level: %d\n", p->castle_level);
+        show_custom_heroes();
     }
 }

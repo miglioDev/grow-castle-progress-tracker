@@ -34,3 +34,17 @@
 a.out
 bin/
 
+# CMake and generated build artifacts
+build/
+build2/
+build_old/
+build_verify/
+_deps/
+*.log
+*_output.txt
+cmake_*.txt
+imgui.ini
+
+# Temporary dependency snapshots
+temp_implot_*/
+

@@ -16,7 +16,8 @@ void show_main_menu()
     printf("4) Progress History\n");
     printf("5) Upgrading Cost\n");
     printf("6) Export/Import Data\n");
-    printf("7) Exit\n");
+    printf("7) Add Custom Hero\n");
+    printf("8) Exit\n");
     printf("==============================\n");
 }
 
@@ -67,26 +68,17 @@ void export_import_data()
     printf("\n==============================\n");
     printf("    IMPORT / EXPORT DATA\n");
     printf("==============================\n\n");
-    printf("Your progress is automatically saved in:\n");
-    printf("  -> ./data/player_data.csv\n\n");
-
-    printf("This file contains all your stored information,\n");
-    printf("such as your Wave, Colony Infinity ratio, and Date.\n\n");
+    printf("Your data is stored locally in the ./data folder:\n");
+    printf("  -> player_data.csv   (player progress and history)\n");
+    printf("  -> custom_heroes.csv (custom hero names, ratios, and levels)\n\n");
 
     printf(" EXPORT:\n");
-    printf(" - To back up your progress, simply copy this file\n");
-    printf("   to a safe location (e.g. USB drive, cloud storage).\n");
-    printf(" - You can also rename it with a timestamp, e.g.:\n");
-    printf("   player_data_backup_2025-11-11.csv\n\n");
-
+    printf(" - Copy both CSV files to a safe location to back up all data.\n");
     printf(" IMPORT:\n");
-    printf(" - To restore your progress, place your backup CSV file\n");
-    printf("   back into the './data' folder.\n");
-    printf(" - Make sure it is named exactly 'player_data.csv'\n");
-    printf("   before restarting the application.\n\n");
+    printf(" - Copy both files back into ./data, keep their exact names,\n");
+    printf("   then restart the application.\n\n");
 
-    printf("  NOTE:\n");
-    printf(" This project uses plain CSV format for simplicity.\n\n");
+    printf("If a file does not exist yet, that category has no saved data.\n\n");
 
     printf("==============================\n\n");
 }

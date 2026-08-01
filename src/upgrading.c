@@ -17,6 +17,54 @@ void how_to_use()
     printf("4) Back to Main Menu\n\n");
 }
 
+unsigned long long calculate_upgrade_cost(int option, long long A, long long Z)
+{
+    if (A <= 0 || Z <= 0 || A >= Z) {
+        return 0ULL;
+    }
+
+    unsigned long long cost = 0ULL;
+
+    switch (option) {
+        case 0:
+            cost = 1250ULL * (unsigned long long)(Z - A) * (unsigned long long)(Z + A - 1);
+            break;
+        case 1:
+            cost = 500ULL * (unsigned long long)(Z - A) * (unsigned long long)(Z + A);
+            break;
+        case 2: {
+            long long current = A;
+
+            if (current < 5000) {
+                long long limit = (Z < 5000) ? Z : 5000;
+                unsigned long long limit_sq = (unsigned long long)limit * limit;
+                unsigned long long current_sq = (unsigned long long)current * current;
+                cost += 1500ULL * (limit_sq - current_sq);
+                current = limit;
+            }
+
+            if (current < 10000 && current < Z) {
+                long long limit = (Z < 10000) ? Z : 10000;
+                unsigned long long limit_sq = (unsigned long long)limit * limit;
+                unsigned long long current_sq = (unsigned long long)current * current;
+                cost += 2000ULL * (limit_sq - current_sq);
+                current = limit;
+            }
+
+            if (current < Z) {
+                unsigned long long Z_sq = (unsigned long long)Z * Z;
+                unsigned long long current_sq = (unsigned long long)current * current;
+                cost += 2500ULL * (Z_sq - current_sq);
+            }
+            break;
+        }
+        default:
+            break;
+    }
+
+    return cost;
+}
+
 void upgrading_cost()
 {
     how_to_use();
@@ -49,104 +97,30 @@ void upgrading_cost()
     }
     while(!valid);
 
-    switch(sub_menu)
-    {
-        case 1:
-            do
-            {
-                if (!safe_input_long_long("Upgrading from level: ", &A, 1, LLONG_MAX)) {
-                    printf("Error: invalid input.\n");
-                    continue;
-                }
-                if (!safe_input_long_long("To level: ", &Z, 1, LLONG_MAX)) {
-                    printf("Error: invalid input.\n");
-                    continue;
-                }
-
-                valid = (A < Z && A > 0 && Z > 0);
-
-                if(!valid) {
-                    printf("\nError: 'From level' must be less than 'To level' and both must be positive!\n");
-                }
-            }
-            while(!valid);
-
-            cost = 1250ULL * (unsigned long long)(Z - A) * (unsigned long long)(Z + A - 1);
-            break;
-
-        case 2:
-            do
-            {
-                if (!safe_input_long_long("Upgrading from level: ", &A, 1, LLONG_MAX)) {
-                    printf("Error: invalid input.\n");
-                    continue;
-                }
-                if (!safe_input_long_long("To level: ", &Z, 1, LLONG_MAX)) {
-                    printf("Error: invalid input.\n");
-                    continue;
-                }
-
-                valid = (A < Z && A > 0 && Z > 0);
-
-                if(!valid) {
-                    printf("\nError: 'From level' must be less than 'To level' and both must be positive!\n");
-                }
-            }
-            while(!valid);
-
-            cost = 500ULL * (unsigned long long)(Z - A) * (unsigned long long)(Z + A);
-            break;
-
-        case 3:
-            do
-            {
-                if (!safe_input_long_long("Upgrading from level: ", &A, 1, LLONG_MAX)) {
-                    printf("Error: invalid input.\n");
-                    continue;
-                }
-                if (!safe_input_long_long("To level: ", &Z, 1, LLONG_MAX)) {
-                    printf("Error: invalid input.\n");
-                    continue;
-                }
-
-                valid = (A < Z && A > 0 && Z > 0);
-
-                if(!valid) {
-                    printf("\nError: 'From level' must be less than 'To level' and both must be positive!\n");
-                }
-            }
-            while(!valid);
-
-            {
-                long long current = A;
-
-                if (current < 5000) {
-                    long long limit = (Z < 5000) ? Z : 5000;
-                    unsigned long long limit_sq = (unsigned long long)limit * limit;
-                    unsigned long long current_sq = (unsigned long long)current * current;
-                    cost += 1500ULL * (limit_sq - current_sq);
-                    current = limit;
-                }
-
-                if (current < 10000 && current < Z) {
-                    long long limit = (Z < 10000) ? Z : 10000;
-                    unsigned long long limit_sq = (unsigned long long)limit * limit;
-                    unsigned long long current_sq = (unsigned long long)current * current;
-                    cost += 2000ULL * (limit_sq - current_sq);
-                    current = limit;
-                }
-
-                if (current < Z) {
-                    unsigned long long Z_sq = (unsigned long long)Z * Z;
-                    unsigned long long current_sq = (unsigned long long)current * current;
-                    cost += 2500ULL * (Z_sq - current_sq);
-                }
-            }
-            break;
-
-        case 4:
-            return;
+    if (sub_menu == 4) {
+        return;
     }
+
+    do
+    {
+        if (!safe_input_long_long("Upgrading from level: ", &A, 1, LLONG_MAX)) {
+            printf("Error: invalid input.\n");
+            continue;
+        }
+        if (!safe_input_long_long("To level: ", &Z, 1, LLONG_MAX)) {
+            printf("Error: invalid input.\n");
+            continue;
+        }
+
+        valid = (A < Z && A > 0 && Z > 0);
+
+        if(!valid) {
+            printf("\nError: 'From level' must be less than 'To level' and both must be positive!\n");
+        }
+    }
+    while(!valid);
+
+    cost = calculate_upgrade_cost(sub_menu - 1, A, Z);
 
     if (cost >= 1000000000000ULL) {
         display_cost = (double)cost / 1000000000000.0;

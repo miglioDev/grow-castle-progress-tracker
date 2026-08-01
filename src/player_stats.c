@@ -1,10 +1,12 @@
 #include <stdio.h>
 #include "../include/player_stats.h"
+#include "../include/file_operations.h"
 
-void analyze_player_data(Player *p, float *r_hero, float *r_leader, float *r_colony, float *r_ta, float *r_castle)
+void analyze_player_data(Player *p, float *r_leader, float *r_colony, float *r_ta, float *r_castle)
 {
-    long int target_ratio1 = 0, target_ratio2 = 0, gap = 0;
-    (*r_hero) = (float)p->heroes_avg_level / p->wave;
+    CustomHero heroes[32];
+    int hero_count = load_custom_heroes(heroes, 32);
+    long int target_ratio1 = 0, gap = 0;
     (*r_leader) = (float)p->leader_level / p->wave;
     (*r_colony) = (float)p->infinity_castle_level / p->wave;
     (*r_ta) = (float)p->town_archer_level / p->wave;
@@ -12,23 +14,31 @@ void analyze_player_data(Player *p, float *r_hero, float *r_leader, float *r_col
 
     printf("Wave:\t\tsubject:\tyour ratio:\t\trecommanded ratio:\ttarget/gap\n");
 
-    target_ratio1 = p->wave * 0.02;
-    target_ratio2 = p->wave * 0.04;
-    printf("%d\t\t Main hero\t%f\t\t ratio: 0.02-0.04\t%ld-%ld\n", p->wave, *r_hero, target_ratio1, target_ratio2);
-
-    target_ratio1 = p->wave * 0.03;
+    target_ratio1 = (long int)(p->wave * p->recommended_ratios.leader);
     gap = p->leader_level - target_ratio1;
-    printf("%d\t\t Leader:\t%f\t\t ratio: 0.03\t\t%ld\n", p->wave, *r_leader, gap);
+    printf("%d\t\t Leader:\t%f\t\t ratio: %.4f\t\t%ld\n", p->wave, *r_leader, p->recommended_ratios.leader, gap);
 
     printf("%d\t\t Infinite C.:\t%f\t\tas high as possible!\t--\n", p->wave, *r_colony);
 
-    target_ratio1 = p->wave * 0.05;
+    target_ratio1 = (long int)(p->wave * p->recommended_ratios.town_archer);
     gap = p->town_archer_level - target_ratio1;
-    printf("%d\t\t Town Archer:\t%f\t\t ratio: 0.05\t\t%ld\n", p->wave, *r_ta, gap);
+    printf("%d\t\t Town Archer:\t%f\t\t ratio: %.4f\t\t%ld\n", p->wave, *r_ta, p->recommended_ratios.town_archer, gap);
 
-    target_ratio1 = p->wave * 0.06;
+    target_ratio1 = (long int)(p->wave * p->recommended_ratios.castle);
     gap = p->castle_level - target_ratio1;
-    printf("%d\t\t Castle:\t%f\t\t ratio: 0.06\t\t%ld\n", p->wave, *r_castle, gap);
+    printf("%d\t\t Castle:\t%f\t\t ratio: %.4f\t\t%ld\n", p->wave, *r_castle, p->recommended_ratios.castle, gap);
+
+    if (hero_count > 0) {
+        printf("\nCustom heroes:\n");
+        for (int i = 0; i < hero_count; ++i) {
+            float ratio = (float)heroes[i].level / p->wave;
+            printf("- %s | target ratio: %.4f | current level: %d | your ratio: %.4f\n",
+                   heroes[i].name,
+                   heroes[i].target_ratio,
+                   heroes[i].level,
+                   ratio);
+        }
+    }
 }
 
 double colony_stats_calculation(Player *p)

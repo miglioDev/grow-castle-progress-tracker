@@ -1,6 +1,10 @@
 #ifndef GRAPH_H
 #define GRAPH_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // Minimal struct with the fields needed for progress graph
 typedef struct {
     char date[32];   // "YYYY-MM-DD" or similar
@@ -13,5 +17,9 @@ typedef struct {
 // count: number of entries
 // terminal_width: pass 0 to auto-detect (preferred)
 void draw_progress_graph(const ProgressData *data, int count, int terminal_width);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // GRAPH_H

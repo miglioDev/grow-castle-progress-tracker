@@ -1,138 +1,125 @@
-![Banner](screenshots/banner.jpeg)
+![Banner](screenshots/banner.png)
 
-**A lightweight, efficient command-line tool written in C to track your progress in *Grow Castle***.
+**A Grow Castle progress tracker built to help players analyze their growth, plan upgrades, and keep track of their journey over time.**
 
 ![C Language](https://img.shields.io/badge/Language-C-blue.svg)
 ![MIT License](https://img.shields.io/badge/License-MIT-green.svg)
-![Version](https://img.shields.io/badge/Version-2.2.1-orange.svg)
+![Version](https://img.shields.io/badge/Version-3.0.0-orange.svg)
 
 ## Why?
 
-Most players track their progress using spreadsheets
-I wanted a more reliable and structured way to track progress, calculate ratios, and analyze long-term growth — so I built this tool
+Hi, I'm miglioDev, and I've been playing Grow Castle for a few years now.
 
-## Features:
-- Track wave progression and Infinity Castle levels
+I created this tool because I wanted a better way to track my progress over the long term, analyze my growth, compare efficiency ratios, and calculate upgrade costs, all in one place.
+
+I wanted something more structured and reliable, so I started developing this application: a dedicated progress tracker built specifically for Grow Castle players.
+
+The entire application works offline, and all data is stored locally on your computer. No accounts, no cloud services, and no external dependencies are required.
+
+It is also cross-platform and works on Windows, Linux, and macOS.
+
+I hope this tool can help other players track their progress, plan their upgrades, and push their waves even further! 
+
+## Features
+
+- Track wave progression and Infinity Castle levels over time, keeping all your historical data available for future analysis
 - Calculate efficiency ratios and compare them with recommended upgrade benchmarks
-- Visualize progress history using simple terminal graphs
+- Visualize your progress history with detailed graphs and progression charts
 - Calculate the gold required to upgrade Castle or Town Archers from a starting level to a target level
-- Save data locally for long-term tracking and analysis
+- Store your data locally for long-term tracking and analysis
+- Fully offline experience with no external services required
+- Cross-platform support for Windows, Linux, and macOS
 
 ---
 
-## Quick Start
+## Build & Run
 
-### Requirements
-- Windows, Linux, or macOS
-- Git
-- GCC compiler
-- Make
+Download the repository and open a terminal in its root directory. The project provides both a command-line build with Make and a graphical build with CMake.
 
-### Installation
+### Dependencies
 
-Clone the repository and build the project:
+- **All platforms:** Git, CMake 3.16 or newer, and a C/C++ compiler
+- **Linux:** Make, GCC, and OpenGL development libraries
+- **macOS:** Make, Xcode Command Line Tools, and an OpenGL-compatible development environment
+- **Windows:** Visual Studio Build Tools or MinGW, plus Ninja if using the Ninja generator
 
-```bash
-git clone https://github.com/miglioDev/grow-castle-progress-tracker.git
-cd grow-castle-progress-tracker
-make run
-```
+The graphical CMake build downloads GLFW and ImGui during configuration through CMake FetchContent.
 
-The program will compile and start automatically.
+### Command-Line Version (Make)
 
-### Platform Notes
-
-**Windows**
-
-* Recommended: install Git Bash and use the commands above
-
-**Linux / macOS**
-
-* Use your system terminal
-* If `make` or `gcc` are missing, your package manager will prompt you to install them
-
-### Running the Program
-
-After building the project, you can start it anytime with:
+On Linux and macOS, install Make and GCC or Clang, then run:
 
 ```bash
-cd grow_castle_tracker
+make
 ./bin/grow_castle_tool
 ```
-Or simply use: 
+
+On Windows, run the same commands from Git Bash, MSYS2, or another environment that provides Make and a C compiler. In PowerShell, run `bin/grow_castle_tool.exe` after building.
+
+### Graphical Version (CMake)
+
+Configure and build with Ninja:
+
 ```bash
-make run
+cmake -S . -B build -G Ninja
+cmake --build build --config Release
 ```
+
+Run the GUI on Linux or macOS:
+
+```bash
+./build/bin/GrowCastleProgressTracker
+```
+
+On Windows PowerShell, run:
+
+```powershell
+.\build\bin\GrowCastleProgressTracker.exe
+```
+
+With Visual Studio instead of Ninja, omit `-G Ninja` and build with `cmake --build build --config Release`.
 ---
 
 ##  How to Use
 
 - **Manage Player Data:** Insert, view, or modify wave, leader, heroes, and Infinity Castle statistics
-- **Ratios & Suggestions:** Check whether your upgrades are balanced and efficient
+- **Ratios & Suggestions:** Check that your levels are in the correct ratio by looking at the level gap
 - **Colony Stats:** View gold production and colony efficiency metrics
-- **Progress History:** Visualize your progression over time using terminal graphs
+- **Progress History:** Visualize your progression over time using graphs
 - **Upgrading Cost:** Shows how much gold is needed to upgrade Castle, Town Archers or Hero, Leader and Tower
 - **Import / Export Data:** Back up your progress or move it between devices
 
-All your data is stored locally inside the `/data` folder using a CSV file and is automatically updated whenever new stats are saved, if needed you can modify previously entered data!
-
-## Technical Overview
-
-The application is written in **C** and uses simple data structures to manage player statistics during runtime.
-
-- Player data is loaded into memory, processed, and saved locally
-- Data persistence is handled using a **CSV file** with numeric values
-- The program runs entirely offline, with no network access or external services
-- A basic **Makefile** is used to compile and run the project
+All your data is stored locally inside the `/data` folder using a CSV file and is automatically updated whenever new stats are saved.
 
 ---
 
 ##  Features Preview
 
-### Main Menu
-The central hub for all your tracking needs - easy navigation and clear options.
+### Player data
+Here you can save all the key data, update the level, or add new heroes along with their respective ratio and level. 
 
-![Main Menu](screenshots/Screenshot_menu.jpeg)
-
----
+![Player Data](screenshots/Player_data.png)
 
 ###  Ratio Analysis & Suggestions
 Get detailed information about your current set-up, levels and ratios.
 
-![Ratio Analysis](screenshots/Screenshot%20_ratio.jpeg)
-
-On the right, the Target/Gap value indicates your position relative to the ideal ratio:
-a positive number means you exceed the target, while a negative number means you are below it.
+![Ratio Analysis & Suggestions](screenshots/Ratio_suggestion.png)
 
 ---
 
-### 📊 Progress Visualization
-Visualize your wave progression over time with clean terminal graphs to track your growth trends.
+### Progress Visualization
+Check the chart showing the ratio between waves and IC 
 
-![Progress Graph](screenshots/Screenshot%20_graph.jpeg)
-
----
-
-## Feedback & Contributions
-
-Contributions, bug reports, and suggestions are welcome!
-
-You can:
-- Open an issue on GitHub for bugs or feature requests
-- Submit a Pull Request with improvements
-- Contact me on Discord: **@miglioDev**
+![Progress Graph](screenshots/Progress_graph.png)
 
 ---
 
-##  License
+## Feedback & Contact
 
-This project is released under the **MIT License**.
+Have feedback, suggestions, or found a bug?
 
-[![MIT License](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
-You are free to use, modify, and distribute this software under the terms of the MIT License.
+Feel free to reach out! You can find me on the official Grow Castle Discord server under **@miglioDev**.
 
 ---
 
-⭐ *If you like this project, consider giving it a star on GitHub to support future updates!*
-
+⭐ I hope this tool helps you track your progress and enjoy Grow Castle even more. Thanks for checking out my project!

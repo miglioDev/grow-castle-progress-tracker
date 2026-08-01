@@ -78,6 +78,7 @@ On Windows PowerShell, run:
 ```
 
 With Visual Studio instead of Ninja, omit `-G Ninja` and build with `cmake --build build --config Release`.
+
 ---
 
 ##  How to Use

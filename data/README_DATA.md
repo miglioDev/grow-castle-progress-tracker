@@ -2,7 +2,8 @@
 
 This directory stores user save files.
 
-## File Format:
-- Binary format for efficient storage
-- Contains player progression data
-- Multiple sessions can be saved
+## Saved Files
+
+- `player_data.csv`: player progression history.
+- `custom_heroes.csv`: custom hero names, ratios, and levels.
+- `pace_data.csv`: the current RWPH/WPH calculator options. This file is overwritten whenever an option changes.

@@ -5,17 +5,18 @@
 #include <errno.h>
 #ifdef _WIN32
     #include <direct.h>
+    #include <windows.h>
     #define mkdir(path, mode) _mkdir(path)
 #else
     #include <sys/stat.h>
     #include <sys/types.h>
 #endif
 #include "../include/file_operations.h"
-#include "../include/graph.h" 
 
 
 #define PLAYER_DATA_FILE "data/player_data.csv"
 #define CUSTOM_HEROES_FILE "data/custom_heroes.csv"
+#define PACE_DATA_FILE "data/pace_data.csv"
 #define DATA_DIR "data"
 
 
@@ -170,6 +171,87 @@ int load_last_player_data(Player *p)
     return 1;
 }
 
+int delete_last_player_record(void)
+{
+    const char *temporary_file = "data/player_data.csv.tmp";
+    FILE *input = fopen(PLAYER_DATA_FILE, "rb");
+    if (!input) {
+        return 0;
+    }
+
+    char line[512];
+    long last_record_position = -1;
+    long line_position = ftell(input);
+    while (fgets(line, sizeof(line), input) != NULL) {
+        size_t length = strlen(line);
+        int has_content = 0;
+        for (size_t index = 0; index < length; ++index) {
+            if (line[index] != '\n' && line[index] != '\r' && line[index] != ' ' && line[index] != '\t') {
+                has_content = 1;
+                break;
+            }
+        }
+        if (has_content) {
+            last_record_position = line_position;
+        }
+        line_position = ftell(input);
+    }
+
+    if (ferror(input) || last_record_position < 0) {
+        fclose(input);
+        return 0;
+    }
+
+    if (last_record_position == 0) {
+        if (fclose(input) != 0) {
+            return 0;
+        }
+        FILE *empty_file = fopen(PLAYER_DATA_FILE, "wb");
+        if (!empty_file) {
+            return 0;
+        }
+        return fclose(empty_file) == 0;
+    }
+
+    rewind(input);
+    FILE *output = fopen(temporary_file, "wb");
+    if (!output) {
+        fclose(input);
+        return 0;
+    }
+
+    long copied = 0;
+    int character;
+    while (copied < last_record_position && (character = fgetc(input)) != EOF) {
+        if (fputc(character, output) == EOF) {
+            fclose(input);
+            fclose(output);
+            remove(temporary_file);
+            return 0;
+        }
+        copied++;
+    }
+
+    int success = copied == last_record_position && fclose(input) == 0 && fclose(output) == 0;
+    if (!success) {
+        remove(temporary_file);
+        return 0;
+    }
+
+#ifdef _WIN32
+    if (!MoveFileExA(temporary_file, PLAYER_DATA_FILE, MOVEFILE_REPLACE_EXISTING)) {
+        remove(temporary_file);
+        return 0;
+    }
+#else
+    if (rename(temporary_file, PLAYER_DATA_FILE) != 0) {
+        remove(temporary_file);
+        return 0;
+    }
+#endif
+    return 1;
+}
+
 int save_custom_hero(const CustomHero *hero)
 {
     if (!hero) return 0;
@@ -223,6 +305,20 @@ int save_custom_heroes(const CustomHero *heroes, int hero_count)
     return fclose(f) == 0;
 }
 
+int delete_custom_hero(int hero_index)
+{
+    CustomHero heroes[32];
+    int hero_count = load_custom_heroes(heroes, 32);
+    if (hero_index < 0 || hero_index >= hero_count) {
+        return 0;
+    }
+
+    for (int index = hero_index; index < hero_count - 1; ++index) {
+        heroes[index] = heroes[index + 1];
+    }
+    return save_custom_heroes(heroes, hero_count - 1);
+}
+
 int load_custom_heroes(CustomHero *heroes, int max_heroes)
 {
     if (!heroes || max_heroes <= 0) return 0;
@@ -261,6 +357,75 @@ int load_custom_heroes(CustomHero *heroes, int max_heroes)
     }
 
     return count;
+}
+
+int save_pace_data(const PaceInputs *inputs)
+{
+    if (!inputs) {
+        return 0;
+    }
+
+    if (!ensure_data_dir()) {
+        fprintf(stderr, "Error: Could not create or access 'data' directory.\n");
+        return 0;
+    }
+
+    FILE *f = fopen(PACE_DATA_FILE, "w");
+    if (!f) {
+        fprintf(stderr, "Error: Could not open '%s' for writing.\n", PACE_DATA_FILE);
+        return 0;
+    }
+
+    int ret = fprintf(f, "%d,%d,%d,%d,%d,%d,%d\n",
+        inputs->dhLevel,
+        inputs->goldenHorn,
+        inputs->horn,
+        inputs->gameSpeed,
+        (int)inputs->chrono,
+        inputs->ob,
+        inputs->mbf);
+
+    if (ret < 0) {
+        fprintf(stderr, "Error: Failed to write to '%s'.\n", PACE_DATA_FILE);
+        fclose(f);
+        return 0;
+    }
+
+    if (fclose(f) != 0) {
+        fprintf(stderr, "Error: Failed to close '%s'.\n", PACE_DATA_FILE);
+        return 0;
+    }
+
+    return 1;
+}
+
+int load_pace_data(PaceInputs *inputs)
+{
+    if (!inputs) {
+        return 0;
+    }
+
+    FILE *f = fopen(PACE_DATA_FILE, "r");
+    if (!f) {
+        return 0;
+    }
+
+    int chrono = 0;
+    int loaded = fscanf(f, "%d,%d,%d,%d,%d,%d,%d",
+        &inputs->dhLevel,
+        &inputs->goldenHorn,
+        &inputs->horn,
+        &inputs->gameSpeed,
+        &chrono,
+        &inputs->ob,
+        &inputs->mbf) == 7;
+    inputs->chrono = (PaceChrono)chrono;
+
+    if (fclose(f) != 0) {
+        fprintf(stderr, "Warning: Could not properly close '%s'.\n", PACE_DATA_FILE);
+    }
+
+    return loaded;
 }
 
 int read_progress_history(const char *filename, ProgressData *out, int max_entries)

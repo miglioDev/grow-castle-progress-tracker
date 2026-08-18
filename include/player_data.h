@@ -28,7 +28,7 @@ typedef struct {
     int leader_level;
     int town_archer_level;
     int castle_level;
-    char last_update[20];    // "YYYY-MM-DD"
+    char last_update[20];    // "YYYY-MM-DD HH:MM:SS"
     RecommendedRatios recommended_ratios;
 } Player;
 

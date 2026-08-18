@@ -34,8 +34,9 @@ set(CORE_SOURCES
     ${SRC_DIR}/file_operations.c
     ${SRC_DIR}/player_stats.c
     ${SRC_DIR}/upgrading.c
-    ${SRC_DIR}/input_safe.c
-    ${SRC_DIR}/graph.c
+    ${SRC_DIR}/investment.c
+    ${SRC_DIR}/pace_analysis.c
+    ${SRC_DIR}/profit.c
 )
 
 set(GUI_SOURCES
@@ -94,6 +95,60 @@ endif()
 set_target_properties(${PROJECT_NAME} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin
 )
+
+enable_testing()
+
+add_executable(pace_analysis_tests
+    ${SRC_DIR}/pace_analysis.c
+    tests/pace_analysis_tests.cpp
+)
+
+target_include_directories(pace_analysis_tests
+    PRIVATE
+        ${INC_DIR}
+)
+
+add_test(NAME pace_analysis_tests COMMAND pace_analysis_tests)
+
+add_executable(profit_tests
+    ${SRC_DIR}/profit.c
+    tests/profit_tests.cpp
+)
+
+target_include_directories(profit_tests
+    PRIVATE
+        ${INC_DIR}
+)
+
+add_test(NAME profit_tests COMMAND profit_tests)
+
+add_executable(investment_tests
+    ${SRC_DIR}/upgrading.c
+    ${SRC_DIR}/investment.c
+    tests/investment_tests.cpp
+)
+
+target_include_directories(investment_tests
+    PRIVATE
+        ${INC_DIR}
+)
+
+add_test(NAME investment_tests COMMAND investment_tests)
+
+add_executable(file_operations_tests
+    ${SRC_DIR}/file_operations.c
+    tests/file_operations_tests.cpp
+)
+
+target_include_directories(file_operations_tests
+    PRIVATE
+        ${INC_DIR}
+)
+
+set(FILE_OPERATIONS_TEST_DIR ${CMAKE_CURRENT_BINARY_DIR}/file_operations_test_data)
+file(MAKE_DIRECTORY ${FILE_OPERATIONS_TEST_DIR})
+add_test(NAME file_operations_tests COMMAND file_operations_tests)
+set_tests_properties(file_operations_tests PROPERTIES WORKING_DIRECTORY ${FILE_OPERATIONS_TEST_DIR})
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:${PROJECT_NAME}>/data"

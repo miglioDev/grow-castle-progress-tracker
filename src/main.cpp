@@ -68,6 +68,55 @@ static void configure_ui_scale(ImGuiIO& io)
     style.FramePadding.y += 1.0f;
 }
 
+static void configure_ui_style()
+{
+    ImGuiStyle& style = ImGui::GetStyle();
+    style.WindowPadding = ImVec2(18.0f, 16.0f);
+    style.FramePadding = ImVec2(10.0f, 7.0f);
+    style.ItemSpacing = ImVec2(10.0f, 8.0f);
+    style.ItemInnerSpacing = ImVec2(8.0f, 6.0f);
+    style.CellPadding = ImVec2(8.0f, 6.0f);
+    style.ScrollbarSize = 16.0f;
+    style.GrabMinSize = 12.0f;
+    style.WindowRounding = 6.0f;
+    style.ChildRounding = 5.0f;
+    style.FrameRounding = 4.0f;
+    style.PopupRounding = 5.0f;
+    style.TabRounding = 4.0f;
+    style.WindowBorderSize = 1.0f;
+    style.ChildBorderSize = 1.0f;
+    style.FrameBorderSize = 1.0f;
+    style.PopupBorderSize = 1.0f;
+
+    ImVec4* colors = style.Colors;
+    colors[ImGuiCol_WindowBg] = ImVec4(0.055f, 0.070f, 0.105f, 1.0f);
+    colors[ImGuiCol_ChildBg] = ImVec4(0.070f, 0.090f, 0.135f, 1.0f);
+    colors[ImGuiCol_PopupBg] = ImVec4(0.075f, 0.095f, 0.145f, 0.98f);
+    colors[ImGuiCol_Border] = ImVec4(0.18f, 0.34f, 0.52f, 0.65f);
+    colors[ImGuiCol_FrameBg] = ImVec4(0.105f, 0.145f, 0.205f, 1.0f);
+    colors[ImGuiCol_FrameBgHovered] = ImVec4(0.14f, 0.24f, 0.36f, 1.0f);
+    colors[ImGuiCol_FrameBgActive] = ImVec4(0.16f, 0.30f, 0.46f, 1.0f);
+    colors[ImGuiCol_TitleBg] = ImVec4(0.045f, 0.070f, 0.115f, 1.0f);
+    colors[ImGuiCol_TitleBgActive] = ImVec4(0.075f, 0.145f, 0.235f, 1.0f);
+    colors[ImGuiCol_Tab] = ImVec4(0.075f, 0.145f, 0.235f, 1.0f);
+    colors[ImGuiCol_TabHovered] = ImVec4(0.12f, 0.30f, 0.50f, 1.0f);
+    colors[ImGuiCol_TabSelected] = ImVec4(0.10f, 0.24f, 0.40f, 1.0f);
+    colors[ImGuiCol_TabSelectedOverline] = ImVec4(0.30f, 0.65f, 1.0f, 1.0f);
+    colors[ImGuiCol_Button] = ImVec4(0.10f, 0.27f, 0.46f, 1.0f);
+    colors[ImGuiCol_ButtonHovered] = ImVec4(0.14f, 0.38f, 0.62f, 1.0f);
+    colors[ImGuiCol_ButtonActive] = ImVec4(0.08f, 0.20f, 0.34f, 1.0f);
+    colors[ImGuiCol_Header] = ImVec4(0.10f, 0.24f, 0.40f, 1.0f);
+    colors[ImGuiCol_HeaderHovered] = ImVec4(0.14f, 0.34f, 0.55f, 1.0f);
+    colors[ImGuiCol_HeaderActive] = ImVec4(0.17f, 0.40f, 0.64f, 1.0f);
+    colors[ImGuiCol_TableHeaderBg] = ImVec4(0.09f, 0.20f, 0.34f, 1.0f);
+    colors[ImGuiCol_TableBorderStrong] = ImVec4(0.20f, 0.38f, 0.58f, 0.85f);
+    colors[ImGuiCol_TableBorderLight] = ImVec4(0.14f, 0.25f, 0.38f, 0.65f);
+    colors[ImGuiCol_TableRowBgAlt] = ImVec4(0.08f, 0.115f, 0.17f, 0.55f);
+    colors[ImGuiCol_CheckMark] = ImVec4(0.35f, 0.72f, 1.0f, 1.0f);
+    colors[ImGuiCol_SliderGrab] = ImVec4(0.25f, 0.58f, 0.88f, 1.0f);
+    colors[ImGuiCol_SliderGrabActive] = ImVec4(0.40f, 0.72f, 1.0f, 1.0f);
+}
+
 int main(int, char**)
 {
     glfwSetErrorCallback(glfw_error_callback);
@@ -88,6 +137,7 @@ int main(int, char**)
     ImGuiIO& io = ImGui::GetIO();
     configure_ui_scale(io);
     ImGui::StyleColorsDark();
+    configure_ui_style();
 
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);

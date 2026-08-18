@@ -3,51 +3,64 @@
 **A free and open-source Grow Castle progress tracker built to help players analyze their growth, plan upgrades, and track their journey over time.**
 
 ![C Language](https://img.shields.io/badge/Language-C-blue.svg)
+![C++ Language](https://img.shields.io/badge/Language-C%2B%2B-blue.svg)
 ![MIT License](https://img.shields.io/badge/License-MIT-green.svg)
-![Version](https://img.shields.io/badge/Version-3.0.0-orange.svg)
+![Version](https://img.shields.io/badge/Version-4.0.0-orange.svg)
 
 ## Why?
 
 Hi, I'm miglioDev, and I've been playing Grow Castle for a few years now.
 
-I created this tool because I wanted a better way to track my progress over the long term, analyze my growth, check ratios, and calculate upgrade costs, all in one place.
+I created this tool because I wanted a complete way to track my progress over the long term, analyze my growth, check ratios, and calculate upgrade costs and profit, all in one place.
 
-I wanted something more structured and reliable, so I started developing this application: a dedicated progress tracker built specifically for Grow Castle players.
+So I started developing this application: a dedicated progress tracker built specifically for Grow Castle players.
 
-The entire application works offline, and all data is stored locally on your computer. No accounts, no cloud services, and no external dependencies are required.
-
-It is also cross-platform and works on Windows, Linux, and macOS.
+The application works offline at runtime, and all data is stored locally on your computer. No accounts, cloud services and it is also cross-platform and works on Windows, Linux, and macOS.
 
 I hope this tool can help other players track their progress, plan their upgrades, and push their waves even further! 
 
 ## Features
 
-- Track wave progression and Infinity Castle levels over time, keeping all your historical data available for future analysis
-- Compare your current levels against custom ratios to see if you are ahead or behind your target progression
-- Visualize your progress history with detailed graphs and progression charts
-- Calculate the gold required to upgrade Castle or Town Archers from a starting level to a target level
-- Fully offline experience with no external services required
-- Cross-platform support for Windows, Linux, and macOS
+- **Player data tracking:** Save wave, Infinity Castle, Leader, Town Archer, and Castle levels with timestamps. Keep a local history of every saved snapshot, delete the latest snapshot when needed, and add custom heroes or towers with their own levels and target ratios.
+- **Ratio and economy analysis:** Compare current levels with recommended ratios, edit the targets, inspect level gaps, and review Infinity Castle colony gold production.
+- **Investment planning:** See the gold invested in each unit, its percentage of the total investment, the cost to reach the current target, and the projected cost for the next period.
+- **Pace and season analysis:** Calculate RWPH, WPH, waves per day, and waves per five-day season from Devil Horn, game speed, horns, Chrono, and tap heroes. Compare the calculated pace with real progress snapshots and estimate downtime for selectable periods.
+- **Profit estimates:** Estimate TAB gold for the latest tracked period and for a future projection. The estimate uses existing RWPH, the starting wave, the active period, and the calculated downtime; no extra gameplay input is required.
+- **Progress history:** Review the Infinity Castle-to-wave ratio over time in a graph and table.
+- **Upgrade costs:** Calculate the gold required to move Castle, Town Archers, or Leader/Hero/Tower units from one level to another.
+- **Local and cross-platform:** The application works offline, stores data in local CSV files, and supports Windows, Linux, and macOS.
 
 ##  Features Preview
 
-### Player data
-Here you can save all the key data, update levels, or add new heroes along with their respective ratio and level. 
+### Player Data
 
-![Player Data](screenshots/Player_data.png)
+Enter and save your current progress, including waves, Infinity Castle, Leader, Town Archer, and Castle levels.
 
-###  Ratio Analysis & Suggestions
-Get detailed information about your current set-up, levels and ratios.
+![Player Data](screenshots/01player_data.png)
 
-![Ratio Analysis & Suggestions](screenshots/Ratio_suggestion.png)
+### Ratio, Levels & Economy
+
+Compare your current unit levels with recommended ratios and adjust your targets as your build develops.
+
+![Ratio and Levels](screenshots/02_ratio.png)
+
+Review unit investments, cost-to-target planning, and the economy overview with its graphical breakdown.
+
+![Economy](screenshots/03_economy.png)
+
+### Pace & Season Analysis
+
+Calculate your wave pace, seasonal progress, and estimated downtime from your current bonuses and tracked snapshots.
+
+![Pace and Season Analysis](screenshots/04_pace_season.png)
 
 ---
 
-### Progress Visualization
-Check the chart showing the ratio between waves and IC 
+### IC Stats & History
 
-![Progress Graph](screenshots/Progress_graph.png)
+Review Infinity Castle gold production and follow your Infinity Castle-to-wave ratio over time.
 
+![IC Stats and History](screenshots/05_IC_stats.png)
 ---
 
 ## Download & Installation
@@ -56,7 +69,7 @@ The easiest way to use Grow Castle Progress Tracker is to download the latest re
 
 ### Windows
 
-Follow the installation tutorial:
+Follow the installation tutorial This tutorial is valid from version 3 onwards:
 
 [![Windows Installation Guide](https://img.youtube.com/vi/GamVHt7rb6Y/maxresdefault.jpg)](https://www.youtube.com/watch?v=GamVHt7rb6Y)
 
@@ -71,7 +84,7 @@ This is expected for independent open-source applications. The source code is pu
 Click:
 `More info` → `Run anyway`
 
-Keep the `gui` and `data` folders in the same directory as the executable.
+Keep the `data` folder in the same directory as the executable.
 
 Your progress data is stored locally inside the `data` folder.
 
@@ -80,29 +93,18 @@ Your progress data is stored locally inside the `data` folder.
 ## Build & Run (For Developers)
 
 This section explains how to compile the application directly from the source code.
-Download the repository and open a terminal in its root directory. The project provides both a command-line build with Make and a graphical build with CMake.
+Download the repository and open a terminal in its root directory. The project uses CMake to build the graphical application.
 
 ### Dependencies
 
 - **All platforms:** Git, CMake 3.16 or newer, and a C/C++ compiler
-- **Linux:** Make, GCC, and OpenGL development libraries
-- **macOS:** Make, Xcode Command Line Tools, and an OpenGL-compatible development environment
+- **Linux:** GCC or Clang, Ninja (or another CMake generator), and OpenGL development libraries
+- **macOS:** Xcode Command Line Tools, Ninja (or another CMake generator), and an OpenGL-compatible development environment
 - **Windows:** Visual Studio Build Tools or MinGW, plus Ninja if using the Ninja generator
 
 The graphical CMake build downloads GLFW and ImGui during configuration through CMake FetchContent.
 
-### Command-Line Version (Make)
-
-On Linux and macOS, install Make and GCC or Clang, then run:
-
-```bash
-make
-./bin/grow_castle_tool
-```
-
-On Windows, run the same commands from Git Bash, MSYS2, or another environment that provides Make and a C compiler. In PowerShell, run `bin/grow_castle_tool.exe` after building.
-
-### Graphical Version (CMake)
+### CMake Build
 
 Configure and build with Ninja:
 
@@ -123,18 +125,19 @@ On Windows PowerShell, run:
 .\build\bin\GrowCastleProgressTracker.exe
 ```
 
-With Visual Studio instead of Ninja, omit `-G Ninja` and build with `cmake --build build --config Release`.
+With Visual Studio instead of Ninja, omit `-G Ninja`, build with `cmake --build build --config Release`, and run `build\bin\Release\GrowCastleProgressTracker.exe` on Windows.
 
 ---
 
-##  How to Use
+## How to Use
 
-- **Manage Player Data:** Insert, view, or modify wave, leader, heroes, and Infinity Castle statistics
-- **Ratios & Suggestions:** Check that your levels are in the correct ratio by looking at the level gap
-- **Colony Stats:** View gold production and colony efficiency metrics
-- **Progress History:** Visualize your progression over time using graphs
-- **Upgrading Cost:** Shows how much gold is needed to upgrade Castle, Town Archers or Hero, Leader and Tower
-- **Import / Export Data:** Back up your progress or move it between devices
+1. Open **Player Data** and enter your current wave and unit levels. Save a snapshot whenever you want to record progress. More snapshots improve historical pace and downtime estimates.
+2. Add optional custom heroes or towers in the **Custom** area. Enter their name, target ratio, and level, then save the list.
+3. Use **Ratio, Levels & Economy** to compare current ratios with your targets. Adjust and save the recommended ratios when your build changes. This tab also contains investment and cost-to-target planning.
+4. Open **Pace & Season Analysis** and select the bonuses that match your current setup: Devil Horn, game speed, Golden Horn, Horn, Chrono, OB, and MBF. The tab displays RWPH, WPH, daily waves, seasonal waves, actual pace, and downtime for All Time, Last Month, Last 5 Days, or Last 24 Hours.
+5. Open **Upgrading Cost & Profit** to calculate an upgrade cost by selecting the unit type and entering the starting and target levels. The Profit Estimate section uses your tracked snapshots to show TAB profit for the last valid period. It also shows a future projection using the existing Projection Days value and assumes no future downtime.
+6. Use **IC Stats & History** to review Infinity Castle gold production and the historical Infinity Castle-to-wave ratio graph.
+7. Use the **Info** tab to see the local data files. Copy the CSV files in `/data` to back up or transfer progress between installations.
 
 All your data is stored locally inside the `/data` folder using a CSV file and is automatically updated whenever new stats are saved.
 

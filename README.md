@@ -131,7 +131,7 @@ With Visual Studio instead of Ninja, omit `-G Ninja`, build with `cmake --build 
 
 ## How to Use
 
-1. Open **Player Data** and enter your current wave and unit levels. Save a snapshot whenever you want to record progress. More snapshots improve historical pace and downtime estimates.
+1. Open **Player Data** and enter your current wave and unit levels. Save a snapshot whenever you want to record progress. More snapshots improve historical pace and downtime estimates. A snapshot cannot be saved if any field contains 0 or a negative value.
 2. Add optional custom heroes or towers in the **Custom** area. Enter their name, target ratio, and level, then save the list.
 3. Use **Ratio, Levels & Economy** to compare current ratios with your targets. Adjust and save the recommended ratios when your build changes. This tab also contains investment and cost-to-target planning.
 4. Open **Pace & Season Analysis** and select the bonuses that match your current setup: Devil Horn, game speed, Golden Horn, Horn, Chrono, OB, and MBF. The tab displays RWPH, WPH, daily waves, seasonal waves, actual pace, and downtime for All Time, Last Month, Last 5 Days, or Last 24 Hours.

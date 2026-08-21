@@ -14,8 +14,8 @@ typedef struct {
     double cost_to_target_next_period;
 } InvestmentMetrics;
 
-InvestmentMetrics calculate_investment_metrics(UnitType unit_type, int current_level,
-    double target_ratio, int current_wave, double pace_wph, double hours_in_period);
+InvestmentMetrics calculate_investment_metrics(UnitType unit_type, long long current_level,
+    double target_ratio, long long current_wave, double pace_wph, double hours_in_period);
 void calculate_investment_percentages(InvestmentMetrics *metrics, int count);
 
 #ifdef __cplusplus

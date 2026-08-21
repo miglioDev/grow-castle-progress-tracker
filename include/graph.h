@@ -8,8 +8,8 @@ extern "C" {
 // Minimal struct with the fields needed for progress history.
 typedef struct {
     char date[32];
-    int wave;
-    int infinity_castle_level;
+    long long wave;
+    long long infinity_castle_level;
 } ProgressData;
 
 #ifdef __cplusplus

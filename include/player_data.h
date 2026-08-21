@@ -9,7 +9,7 @@ extern "C" {
 typedef struct {
     char name[64];
     float target_ratio;
-    int level;
+    long long level;
 } CustomHero;
 
 typedef struct {
@@ -23,11 +23,11 @@ typedef struct {
 #define DEFAULT_CASTLE_RATIO 0.06f
 
 typedef struct {
-    int wave;
-    int infinity_castle_level;
-    int leader_level;
-    int town_archer_level;
-    int castle_level;
+    long long wave;
+    long long infinity_castle_level;
+    long long leader_level;
+    long long town_archer_level;
+    long long castle_level;
     char last_update[20];    // "YYYY-MM-DD HH:MM:SS"
     RecommendedRatios recommended_ratios;
 } Player;

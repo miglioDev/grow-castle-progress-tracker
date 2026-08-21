@@ -25,7 +25,6 @@ static int g_upgrade_type = 0;
 static long long g_upgrade_from = 1;
 static long long g_upgrade_to = 2;
 static double g_upgrade_cost = 0.0;
-static unsigned long long g_upgrade_cost_value = 0ULL;
 static bool g_upgrade_ready = false;
 
 static float g_ratio_leader = 0.0f;
@@ -38,9 +37,13 @@ static double g_gold_whip = 0.0;
 static int g_projection_days = 5;
 static char g_custom_hero_name[64] = "";
 static float g_custom_hero_target_ratio = 0.04f;
-static int g_custom_hero_level = 1;
+static long long g_custom_hero_level = 1;
 static CustomHero g_custom_heroes[32] = {0};
 static int g_custom_hero_count = 0;
+static const int MAX_CUSTOM_HEROES = 32;
+// Step values for InputScalar so 64-bit level/wave fields keep +/- buttons.
+static const long long kInt64Step = 1;
+static const long long kInt64StepFast = 100;
 static PaceInputs g_pace_inputs = {0};
 static PaceStats g_pace_stats = {0};
 static int g_pace_history_period = 0;
@@ -49,7 +52,7 @@ static char g_save_confirmation_target[64] = "";
 static Player g_pending_player_deletion = {0};
 static int g_selected_custom_hero_deletion = 0;
 
-// Centralized palette so status/severity colors stay consistent across every tab.
+// Centralized palette so status/severity colors stay consistent across tabs.
 namespace UiColors {
     static const ImVec4 Success = ImVec4(0.30f, 0.85f, 0.45f, 1.0f);
     static const ImVec4 Danger = ImVec4(1.0f, 0.35f, 0.35f, 1.0f);
@@ -68,7 +71,7 @@ typedef struct {
     double downtimeHours;
     double downtimePercentage;
     double elapsedHours;
-    int referenceWave;
+    long long referenceWave;
     int entryCount;
     int usesDateOnlyEntries;
     int isValid;
@@ -110,7 +113,7 @@ static void DrawSubsectionHeading(const char* text)
     ImGui::PopStyleColor();
 }
 
-// Standard section spacer used between major blocks so every tab breathes the same way.
+// Standard spacer between major sections.
 static void DrawSectionBreak()
 {
     ImGui::Spacing();
@@ -118,7 +121,7 @@ static void DrawSectionBreak()
     ImGui::Spacing();
 }
 
-// Small "(?)" marker with a tooltip, used to keep widget labels short without losing detail.
+// "(?)" marker with a hover tooltip.
 static void DrawHelpMarker(const char* text)
 {
     ImGui::SameLine();
@@ -172,7 +175,7 @@ static bool BeginBoldTabItem(const char* label)
 static void RefreshPlayerData() {
     if (load_last_player_data(&g_player)) {
         g_data_loaded = true;
-        snprintf(g_status_message, sizeof(g_status_message), "Loaded last saved player data: %s, wave=%d", g_player.last_update, g_player.wave);
+        snprintf(g_status_message, sizeof(g_status_message), "Loaded last saved player data: %s, wave=%lld", g_player.last_update, g_player.wave);
     } else {
         g_data_loaded = true;
         g_player = {0};
@@ -221,6 +224,16 @@ static void SavePaceDataFromGui() {
 static void AddCustomHeroFromGui() {
     if (g_custom_hero_name[0] == '\0') {
         snprintf(g_status_message, sizeof(g_status_message), "Please enter a hero name.");
+        return;
+    }
+
+    if (strchr(g_custom_hero_name, ',') != NULL) {
+        snprintf(g_status_message, sizeof(g_status_message), "Hero name cannot contain a comma.");
+        return;
+    }
+
+    if (g_custom_hero_count >= MAX_CUSTOM_HEROES) {
+        snprintf(g_status_message, sizeof(g_status_message), "Maximum of %d custom heroes reached.", MAX_CUSTOM_HEROES);
         return;
     }
 
@@ -319,7 +332,7 @@ static HistoricalPaceStats CalculateHistoricalPaceStats(int period_index) {
     }
 
     const double elapsed_hours = difftime(last_timestamp, first_timestamp) / 3600.0;
-    const int completed_waves = g_progress[last_index].wave - g_progress[first_index].wave;
+    const long long completed_waves = g_progress[last_index].wave - g_progress[first_index].wave;
     if (elapsed_hours <= 0.0 || completed_waves < 0 || expected_wph <= 0.0) {
         snprintf(stats.message, sizeof(stats.message), "The selected Player Data entries cannot produce a valid pace comparison.");
         return stats;
@@ -366,6 +379,8 @@ static void SaveRecommendedRatios() {
         return;
     }
 
+    // Replace the previous entry instead of appending a ratio-only duplicate row.
+    delete_last_player_record();
     if (SavePlayerData()) {
         MarkDataSaved("recommended_ratios");
         snprintf(g_status_message, sizeof(g_status_message), "Recommended ratios saved successfully.");
@@ -387,45 +402,6 @@ static void SaveCustomHeroesFromGui() {
 
     MarkDataSaved("custom_heroes");
     snprintf(g_status_message, sizeof(g_status_message), "Custom heroes saved successfully.");
-}
-
-static void AddThousandsSeparator(unsigned long long value, char* out, size_t out_size) {
-    char temp[64];
-    int len = 0;
-    if (value == 0) {
-        temp[len++] = '0';
-    }
-    while (value > 0 && len < (int)sizeof(temp) - 1) {
-        temp[len++] = (char)('0' + (value % 10));
-        value /= 10;
-    }
-    int dst = 0;
-    for (int i = 0; i < len; ++i) {
-        if (i > 0 && (i % 3) == 0) {
-            if (dst < (int)out_size - 1) {
-                out[dst++] = ',';
-            }
-        }
-        if (dst < (int)out_size - 1) {
-            out[dst++] = temp[len - 1 - i];
-        }
-    }
-    out[dst] = '\0';
-}
-
-static void FormatGoldAmount(unsigned long long amount, char* out, size_t out_size) {
-    if (amount >= 1000000000000ULL) {
-        double scaled = (double)amount / 1000000000000.0;
-        snprintf(out, out_size, "%.2f Trillion", scaled);
-    } else if (amount >= 1000000000ULL) {
-        double scaled = (double)amount / 1000000000.0;
-        snprintf(out, out_size, "%.2f Billion", scaled);
-    } else if (amount >= 1000000ULL) {
-        double scaled = (double)amount / 1000000.0;
-        snprintf(out, out_size, "%.2f Million", scaled);
-    } else {
-        AddThousandsSeparator(amount, out, out_size);
-    }
 }
 
 static void FormatGoldValue(double amount, char* out, size_t out_size) {
@@ -614,19 +590,19 @@ static void DrawPlayerDataTab() {
     ImGui::Spacing();
 
     ImGui::SetNextItemWidth(320.0f);
-    ImGui::InputInt("Wave", &g_player.wave);
-    if (g_player.wave < 0) g_player.wave = 0;
+    ImGui::InputScalar("Wave", ImGuiDataType_S64, &g_player.wave, &kInt64Step, &kInt64StepFast);
+    if (g_player.wave < 1) g_player.wave = 1;
     ImGui::SetNextItemWidth(320.0f);
-    ImGui::InputInt("Infinity Castle Level", &g_player.infinity_castle_level);
+    ImGui::InputScalar("Infinity Castle Level", ImGuiDataType_S64, &g_player.infinity_castle_level, &kInt64Step, &kInt64StepFast);
     if (g_player.infinity_castle_level < 0) g_player.infinity_castle_level = 0;
     ImGui::SetNextItemWidth(320.0f);
-    ImGui::InputInt("Leader Level", &g_player.leader_level);
+    ImGui::InputScalar("Leader Level", ImGuiDataType_S64, &g_player.leader_level, &kInt64Step, &kInt64StepFast);
     if (g_player.leader_level < 0) g_player.leader_level = 0;
     ImGui::SetNextItemWidth(320.0f);
-    ImGui::InputInt("Town Archer Level", &g_player.town_archer_level);
+    ImGui::InputScalar("Town Archer Level", ImGuiDataType_S64, &g_player.town_archer_level, &kInt64Step, &kInt64StepFast);
     if (g_player.town_archer_level < 0) g_player.town_archer_level = 0;
     ImGui::SetNextItemWidth(320.0f);
-    ImGui::InputInt("Castle Level", &g_player.castle_level);
+    ImGui::InputScalar("Castle Level", ImGuiDataType_S64, &g_player.castle_level, &kInt64Step, &kInt64StepFast);
     if (g_player.castle_level < 0) g_player.castle_level = 0;
 
     PushPrimaryButtonStyle();
@@ -657,11 +633,11 @@ static void DrawPlayerDataTab() {
         ImGui::Text("The following saved data will be permanently deleted:");
         ImGui::Separator();
         ImGui::Text("Date / Time: %s", g_pending_player_deletion.last_update);
-        ImGui::Text("Wave: %d", g_pending_player_deletion.wave);
-        ImGui::Text("Infinity Castle: %d", g_pending_player_deletion.infinity_castle_level);
-        ImGui::Text("Leader: %d", g_pending_player_deletion.leader_level);
-        ImGui::Text("Town Archers: %d", g_pending_player_deletion.town_archer_level);
-        ImGui::Text("Castle: %d", g_pending_player_deletion.castle_level);
+        ImGui::Text("Wave: %lld", g_pending_player_deletion.wave);
+        ImGui::Text("Infinity Castle: %lld", g_pending_player_deletion.infinity_castle_level);
+        ImGui::Text("Leader: %lld", g_pending_player_deletion.leader_level);
+        ImGui::Text("Town Archers: %lld", g_pending_player_deletion.town_archer_level);
+        ImGui::Text("Castle: %lld", g_pending_player_deletion.castle_level);
         ImGui::Spacing();
         ImGui::Text("Do you want to delete this saved data?");
         PushDangerButtonStyle();
@@ -693,11 +669,11 @@ static void DrawPlayerDataTab() {
         const char* labels[] = {"Wave", "Infinity Castle Level", "Leader Level", "Town Archer Level", "Castle Level", "Last Update"};
         const char* last_update = g_player.last_update[0] ? g_player.last_update : "N/A";
         char values[6][32];
-        snprintf(values[0], sizeof(values[0]), "%d", g_player.wave);
-        snprintf(values[1], sizeof(values[1]), "%d", g_player.infinity_castle_level);
-        snprintf(values[2], sizeof(values[2]), "%d", g_player.leader_level);
-        snprintf(values[3], sizeof(values[3]), "%d", g_player.town_archer_level);
-        snprintf(values[4], sizeof(values[4]), "%d", g_player.castle_level);
+        snprintf(values[0], sizeof(values[0]), "%lld", g_player.wave);
+        snprintf(values[1], sizeof(values[1]), "%lld", g_player.infinity_castle_level);
+        snprintf(values[2], sizeof(values[2]), "%lld", g_player.leader_level);
+        snprintf(values[3], sizeof(values[3]), "%lld", g_player.town_archer_level);
+        snprintf(values[4], sizeof(values[4]), "%lld", g_player.castle_level);
         snprintf(values[5], sizeof(values[5]), "%s", last_update);
         for (int index = 0; index < 6; ++index) {
             ImGui::TableNextRow();
@@ -713,9 +689,10 @@ static void DrawPlayerDataTab() {
     ImGui::InputText("Hero / Tower Name", g_custom_hero_name, IM_ARRAYSIZE(g_custom_hero_name));
     ImGui::SetNextItemWidth(420.0f);
     ImGui::InputFloat("Target Ratio", &g_custom_hero_target_ratio, 0.001f, 0.01f, "%.4f");
+    if (g_custom_hero_target_ratio < 0.0f) g_custom_hero_target_ratio = 0.0f;
     DrawHelpMarker("All ratios, including this one, are also editable later in the 'Ratio, Levels & Economy' tab.");
     ImGui::SetNextItemWidth(420.0f);
-    ImGui::InputInt("Current Level", &g_custom_hero_level);
+    ImGui::InputScalar("Current Level", ImGuiDataType_S64, &g_custom_hero_level, &kInt64Step, &kInt64StepFast);
     PushPrimaryButtonStyle();
     if (ImGui::Button("Add Custom Hero")) {
         AddCustomHeroFromGui();
@@ -730,7 +707,7 @@ static void DrawPlayerDataTab() {
             CustomHero& hero = g_custom_heroes[i];
             std::string level_label = std::string(hero.name) + " Level##custom_player_level_" + std::to_string(i);
             ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x * 0.5f);
-            ImGui::InputInt(level_label.c_str(), &hero.level);
+            ImGui::InputScalar(level_label.c_str(), ImGuiDataType_S64, &hero.level, &kInt64Step, &kInt64StepFast);
         }
         ImGui::EndChild();
         PushPrimaryButtonStyle();
@@ -817,75 +794,78 @@ static void DrawRatioSuggestionTab() {
 
         ImGui::TableNextRow();
         ImGui::TableNextColumn(); ImGui::Text("Leader");
-        ImGui::TableNextColumn(); ImGui::Text("%d", g_player.leader_level);
+        ImGui::TableNextColumn(); ImGui::Text("%lld", g_player.leader_level);
         ImGui::TableNextColumn();
         ImGui::SetNextItemWidth(-1.0f);
         ImGui::InputFloat("##leader_ratio", &g_player.recommended_ratios.leader, 0.001f, 0.01f, "%.4f");
+        if (g_player.recommended_ratios.leader < 0.0f) g_player.recommended_ratios.leader = 0.0f;
         ImGui::TableNextColumn();
-        float leader_current_ratio = (g_player.wave > 0) ? (float)g_player.leader_level / g_player.wave : 0.0f;
+        float leader_current_ratio = (g_player.wave > 0) ? (float)((double)g_player.leader_level / (double)g_player.wave) : 0.0f;
         if (leader_current_ratio < g_player.recommended_ratios.leader) {
             ImGui::TextColored(UiColors::Danger, "%.4f", leader_current_ratio);
         } else {
             ImGui::TextColored(UiColors::Success, "%.4f", leader_current_ratio);
         }
         ImGui::TableNextColumn();
-        int leader_gap = (int)(g_player.leader_level - g_player.wave * g_player.recommended_ratios.leader);
+        long long leader_gap = (long long)((double)g_player.leader_level - (double)g_player.wave * (double)g_player.recommended_ratios.leader);
         if (leader_gap < 0) {
-            ImGui::TextColored(UiColors::Danger, "-%d", -leader_gap);
+            ImGui::TextColored(UiColors::Danger, "-%lld", -leader_gap);
         } else {
-            ImGui::TextColored(UiColors::Success, "%d", leader_gap);
+            ImGui::TextColored(UiColors::Success, "%lld", leader_gap);
         }
 
         ImGui::TableNextRow();
         ImGui::TableNextColumn(); ImGui::Text("Infinity Castle");
-        ImGui::TableNextColumn(); ImGui::Text("%d", g_player.infinity_castle_level);
+        ImGui::TableNextColumn(); ImGui::Text("%lld", g_player.infinity_castle_level);
         ImGui::TableNextColumn(); ImGui::Text("As high as possible");
         ImGui::TableNextColumn();
-        float colony_current_ratio = (g_player.wave > 0) ? (float)g_player.infinity_castle_level / g_player.wave : 0.0f;
+        float colony_current_ratio = (g_player.wave > 0) ? (float)((double)g_player.infinity_castle_level / (double)g_player.wave) : 0.0f;
         ImGui::TextColored(UiColors::Info, "%.4f", colony_current_ratio);
         ImGui::TableNextColumn();
         ImGui::TextColored(UiColors::Muted, "-");
 
         ImGui::TableNextRow();
         ImGui::TableNextColumn(); ImGui::Text("Town Archer");
-        ImGui::TableNextColumn(); ImGui::Text("%d", g_player.town_archer_level);
+        ImGui::TableNextColumn(); ImGui::Text("%lld", g_player.town_archer_level);
         ImGui::TableNextColumn();
         ImGui::SetNextItemWidth(-1.0f);
         ImGui::InputFloat("##town_archer_ratio", &g_player.recommended_ratios.town_archer, 0.001f, 0.01f, "%.4f");
+        if (g_player.recommended_ratios.town_archer < 0.0f) g_player.recommended_ratios.town_archer = 0.0f;
         ImGui::TableNextColumn();
-        float town_archer_current_ratio = (g_player.wave > 0) ? (float)g_player.town_archer_level / g_player.wave : 0.0f;
+        float town_archer_current_ratio = (g_player.wave > 0) ? (float)((double)g_player.town_archer_level / (double)g_player.wave) : 0.0f;
         if (town_archer_current_ratio < g_player.recommended_ratios.town_archer) {
             ImGui::TextColored(UiColors::Danger, "%.4f", town_archer_current_ratio);
         } else {
             ImGui::TextColored(UiColors::Success, "%.4f", town_archer_current_ratio);
         }
         ImGui::TableNextColumn();
-        int archer_gap = (int)(g_player.town_archer_level - g_player.wave * g_player.recommended_ratios.town_archer);
+        long long archer_gap = (long long)((double)g_player.town_archer_level - (double)g_player.wave * (double)g_player.recommended_ratios.town_archer);
         if (archer_gap < 0) {
-            ImGui::TextColored(UiColors::Danger, "-%d", -archer_gap);
+            ImGui::TextColored(UiColors::Danger, "-%lld", -archer_gap);
         } else {
-            ImGui::TextColored(UiColors::Success, "%d", archer_gap);
+            ImGui::TextColored(UiColors::Success, "%lld", archer_gap);
         }
 
         ImGui::TableNextRow();
         ImGui::TableNextColumn(); ImGui::Text("Castle");
-        ImGui::TableNextColumn(); ImGui::Text("%d", g_player.castle_level);
+        ImGui::TableNextColumn(); ImGui::Text("%lld", g_player.castle_level);
         ImGui::TableNextColumn();
         ImGui::SetNextItemWidth(-1.0f);
         ImGui::InputFloat("##castle_ratio", &g_player.recommended_ratios.castle, 0.001f, 0.01f, "%.4f");
+        if (g_player.recommended_ratios.castle < 0.0f) g_player.recommended_ratios.castle = 0.0f;
         ImGui::TableNextColumn();
-        float castle_current_ratio = (g_player.wave > 0) ? (float)g_player.castle_level / g_player.wave : 0.0f;
+        float castle_current_ratio = (g_player.wave > 0) ? (float)((double)g_player.castle_level / (double)g_player.wave) : 0.0f;
         if (castle_current_ratio < g_player.recommended_ratios.castle) {
             ImGui::TextColored(UiColors::Danger, "%.4f", castle_current_ratio);
         } else {
             ImGui::TextColored(UiColors::Success, "%.4f", castle_current_ratio);
         }
         ImGui::TableNextColumn();
-        int castle_gap = (int)(g_player.castle_level - g_player.wave * g_player.recommended_ratios.castle);
+        long long castle_gap = (long long)((double)g_player.castle_level - (double)g_player.wave * (double)g_player.recommended_ratios.castle);
         if (castle_gap < 0) {
-            ImGui::TextColored(UiColors::Danger, "-%d", -castle_gap);
+            ImGui::TextColored(UiColors::Danger, "-%lld", -castle_gap);
         } else {
-            ImGui::TextColored(UiColors::Success, "%d", castle_gap);
+            ImGui::TextColored(UiColors::Success, "%lld", castle_gap);
         }
 
         ImGui::EndTable();
@@ -921,12 +901,13 @@ static void DrawRatioSuggestionTab() {
                 CustomHero& hero = g_custom_heroes[i];
                 ImGui::TableNextRow();
                 ImGui::TableNextColumn(); ImGui::Text("Custom Hero");
-                ImGui::TableNextColumn(); ImGui::Text("%d", hero.level);
+                ImGui::TableNextColumn(); ImGui::Text("%lld", hero.level);
                 ImGui::TableNextColumn(); ImGui::Text("%s", hero.name);
                 ImGui::TableNextColumn();
-                float current_ratio = (g_player.wave > 0) ? (float)hero.level / g_player.wave : 0.0f;
+                float current_ratio = (g_player.wave > 0) ? (float)((double)hero.level / (double)g_player.wave) : 0.0f;
                 ImGui::SetNextItemWidth(-1.0f);
                 ImGui::InputFloat(("Target##custom_ratio_" + std::to_string(i)).c_str(), &hero.target_ratio, 0.001f, 0.01f, "%.4f");
+                if (hero.target_ratio < 0.0f) hero.target_ratio = 0.0f;
                 ImGui::TableNextColumn();
                 if (current_ratio < hero.target_ratio) {
                     ImGui::TextColored(UiColors::Danger, "%.4f", current_ratio);
@@ -934,11 +915,11 @@ static void DrawRatioSuggestionTab() {
                     ImGui::TextColored(UiColors::Success, "%.4f", current_ratio);
                 }
                 ImGui::TableNextColumn();
-                int custom_gap = (int)(hero.level - g_player.wave * hero.target_ratio);
+                long long custom_gap = (long long)((double)hero.level - (double)g_player.wave * (double)hero.target_ratio);
                 if (custom_gap < 0) {
-                    ImGui::TextColored(UiColors::Danger, "-%d", -custom_gap);
+                    ImGui::TextColored(UiColors::Danger, "-%lld", -custom_gap);
                 } else {
-                    ImGui::TextColored(UiColors::Success, "%d", custom_gap);
+                    ImGui::TextColored(UiColors::Success, "%lld", custom_gap);
                 }
             }
             ImGui::EndTable();
@@ -963,7 +944,7 @@ static void DrawColonyStatsTab() {
     ImGui::Separator();
     ImGui::Spacing();
     DrawSubsectionHeading("CORE METRICS");
-    ImGui::Text("Infinity Castle Level: %d", g_player.infinity_castle_level);
+    ImGui::Text("Infinity Castle Level: %lld", g_player.infinity_castle_level);
     ImGui::Text("Colony Ratio: %.4f", g_ratio_colony);
     ImGui::Spacing();
     DrawSubsectionHeading("GOLD PRODUCTION");
@@ -1052,7 +1033,7 @@ static void DrawProgressHistoryTab() {
                 : graph_min.x + ((float)idx / (display_count - 1)) * width;
             draw_list->AddLine(ImVec2(x, graph_max.y), ImVec2(x, graph_max.y + 6), IM_COL32(120, 120, 150, 255));
             char label[32];
-            snprintf(label, sizeof(label), "%d", g_progress[start_index + idx].wave);
+            snprintf(label, sizeof(label), "%lld", g_progress[start_index + idx].wave);
             ImVec2 text_size = ImGui::CalcTextSize(label);
             draw_list->AddText(ImVec2(x - text_size.x * 0.5f, graph_max.y + 8), IM_COL32(220, 220, 220, 200), label);
         }
@@ -1088,8 +1069,8 @@ static void DrawProgressHistoryTab() {
             for (int i = start_index; i < start_index + display_count; ++i) {
                 ImGui::TableNextRow();
                 ImGui::TableNextColumn(); ImGui::Text("%s", g_progress[i].date);
-                ImGui::TableNextColumn(); ImGui::Text("%d", g_progress[i].wave);
-                ImGui::TableNextColumn(); ImGui::Text("%d", g_progress[i].infinity_castle_level);
+                ImGui::TableNextColumn(); ImGui::Text("%lld", g_progress[i].wave);
+                ImGui::TableNextColumn(); ImGui::Text("%lld", g_progress[i].infinity_castle_level);
                 ImGui::TableNextColumn(); ImGui::Text("%.4f", g_progress[i].wave > 0 ? (double)g_progress[i].infinity_castle_level / g_progress[i].wave : 0.0);
             }
             ImGui::EndTable();
@@ -1116,7 +1097,7 @@ static void DrawProfitEstimateSection()
     char tab_profit_text[64];
     FormatProfitValue(tab_profit, tab_profit_text, sizeof(tab_profit_text));
     ImGui::TextWrapped("Estimate of gold earned through TAB during the last tracked period, calculated from your real gameplay data - no additional input required.");
-    ImGui::Text("Period: %.2f days | Reference wave: %d", historical_stats.elapsedHours / 24.0, historical_stats.referenceWave);
+    ImGui::Text("Period: %.2f days | Reference wave: %lld", historical_stats.elapsedHours / 24.0, historical_stats.referenceWave);
     ImGui::PushStyleColor(ImGuiCol_ChildBg, UiColors::PanelBg);
     ImGui::BeginChild("profit_estimate_panel", ImVec2(0.0f, 0.0f), ImGuiChildFlags_Borders);
     ImGui::Text("TAB Profit: %s Gold", tab_profit_text);
@@ -1153,11 +1134,9 @@ static void DrawUpgradingCostTab() {
                 : (g_upgrade_type == 1 ? UNIT_TYPE_TOWN_ARCHERS : UNIT_TYPE_LEADER);
             g_upgrade_cost = cost_function(unit_type, (double)g_upgrade_to)
                 - cost_function(unit_type, (double)g_upgrade_from);
-            g_upgrade_cost_value = g_upgrade_cost > 0.0 ? (unsigned long long)g_upgrade_cost : 0ULL;
             g_upgrade_ready = true;
         } else {
             g_upgrade_ready = false;
-            g_upgrade_cost_value = 0ULL;
             g_upgrade_cost = 0.0;
         }
     }
@@ -1165,7 +1144,7 @@ static void DrawUpgradingCostTab() {
 
     if (g_upgrade_ready) {
         char cost_text[64];
-        FormatGoldAmount(g_upgrade_cost_value, cost_text, sizeof(cost_text));
+        FormatGoldValue(g_upgrade_cost, cost_text, sizeof(cost_text));
         DrawSectionBreak();
         DrawSectionHeading("CALCULATION RESULT");
         ImGui::Spacing();

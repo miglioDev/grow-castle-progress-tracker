@@ -131,15 +131,16 @@ With Visual Studio instead of Ninja, omit `-G Ninja`, build with `cmake --build 
 
 ## How to Use
 
-1. Open **Player Data** and enter your current wave and unit levels. Save a snapshot whenever you want to record progress. More snapshots improve historical pace and downtime estimates. A snapshot cannot be saved if any field contains 0 or a negative value.
+1. Open **Player Data** and enter your current wave and unit levels. Save a snapshot whenever you want to record progress. More snapshots improve historical pace and downtime estimates. Always make sure the data you enter reflects your actual progress at the time of saving. Saving incorrect data, or saving a second snapshot shortly after with a significantly different wave because the first one was incorrect, can distort the historical pace and downtime calculations. One accurate snapshot per day, saved consistently, can provide much more reliable results than many inaccurate or rushed snapshots. If you accidentally save incorrect data, you can immediately remove the latest snapshot using the **Delete Last Saved Data** button without affecting your other saved data. A snapshot cannot be saved if any field contains 0 or a negative value.
 2. Add optional custom heroes or towers in the **Custom** area. Enter their name, target ratio, and level, then save the list.
 3. Use **Ratio, Levels & Economy** to compare current ratios with your targets. Adjust and save the recommended ratios when your build changes. This tab also contains investment and cost-to-target planning.
 4. Open **Pace & Season Analysis** and select the bonuses that match your current setup: Devil Horn, game speed, Golden Horn, Horn, Chrono, OB, and MBF. The tab displays RWPH, WPH, daily waves, seasonal waves, actual pace, and downtime for All Time, Last Month, Last 5 Days, or Last 24 Hours.
 5. Open **Upgrading Cost & Profit** to calculate an upgrade cost by selecting the unit type and entering the starting and target levels. The Profit Estimate section uses your tracked snapshots to show TAB profit for the last valid period. It also shows a future projection using the existing Projection Days value and assumes no future downtime.
 6. Use **IC Stats & History** to review Infinity Castle gold production and the historical Infinity Castle-to-wave ratio graph.
-7. Use the **Info** tab to see the local data files. Copy the CSV files in `/data` to back up or transfer progress between installations.
+7. Use the **Info** tab to view useful information about the application and the local data files, including their names and location. Your progress is stored in CSV files inside the `/data` folder. These files can be copied elsewhere to create a backup or transferred to another installation or version of the app to carry your saved progress with you.
 
 All your data is stored locally inside the `/data` folder using a CSV file and is automatically updated whenever new stats are saved.
+
 
 ---
 

@@ -1,7 +1,7 @@
 #include "investment.h"
 
-InvestmentMetrics calculate_investment_metrics(UnitType unit_type, int current_level,
-    double target_ratio, int current_wave, double pace_wph, double hours_in_period)
+InvestmentMetrics calculate_investment_metrics(UnitType unit_type, long long current_level,
+    double target_ratio, long long current_wave, double pace_wph, double hours_in_period)
 {
     InvestmentMetrics metrics = {0};
     double target_level = target_ratio * (double)current_wave;

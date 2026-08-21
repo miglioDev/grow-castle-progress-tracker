@@ -2,10 +2,10 @@
 #include "../include/upgrading.h"
 
 static const UnitCostParameters UNIT_COST_MODELS[] = {
-    {1250.0, 0.0, 0.0}, /* Castle: verified cumulative cost is 1250 * level^2. */
-    {500.0, 0.0, 0.0},  /* Town Archers: derived from the existing upgrade formula. */
-    {1250.0, 0.0, 0.0}, /* Infinity Castle currently uses the Castle model until calibrated data is supplied. */
-    {2500.0, 0.0, 0.0}, /* Leader and custom heroes use the highest existing hero tier as a conservative model. */
+    {1250.0, 0.0, 0.0}, /* Castle: cumulative cost = 1250 * level^2. */
+    {500.0, 0.0, 0.0},  /* Town Archers: derived from existing upgrade formula. */
+    {1250.0, 0.0, 0.0}, /* Infinity Castle: uses Castle model until calibrated. */
+    {2500.0, 0.0, 0.0}, /* Leader/custom heroes: highest existing hero tier. */
     {2500.0, 0.0, 0.0}
 };
 

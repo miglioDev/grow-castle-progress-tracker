@@ -1,4 +1,3 @@
-// src/file_operations.c
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -42,8 +41,7 @@ int save_player_data(const Player *p)
         return 0;
     }
 
-        // Write date, player levels, and the current recommended ratios.
-        int ret = fprintf(f, "%s,%d,%d,%d,%d,%d,%.6f,%.6f,%.6f\n",
+        int ret = fprintf(f, "%s,%lld,%lld,%lld,%lld,%lld,%.6f,%.6f,%.6f\n",
             p->last_update,
             p->wave,
             p->infinity_castle_level,
@@ -68,8 +66,7 @@ int save_player_data(const Player *p)
     return 1;
 }
 
-// Load last record 
-// 0 for file missing/empty
+// Returns 1 if loaded, 0 if file is missing/empty.
 int load_last_player_data(Player *p)
 {
     if (!p) return 0;
@@ -81,9 +78,8 @@ int load_last_player_data(Player *p)
 
     char line[512];
     int found = 0;
-    // temp storage  (last valid parsed record)
     char last_datebuf[32] = "";
-    int last_wave = 0, last_inf = 0, last_leader = 0, last_town_archer = 0, last_castle = 0;
+    long long last_wave = 0, last_inf = 0, last_leader = 0, last_town_archer = 0, last_castle = 0;
     RecommendedRatios last_ratios = {
         DEFAULT_LEADER_RATIO,
         DEFAULT_TOWN_ARCHER_RATIO,
@@ -99,21 +95,20 @@ int load_last_player_data(Player *p)
         if (L == 0) continue; 
 
         char datebuf[32];
-        int wave = 0, inf = 0, leader = 0, town_archer = 0, castle = 0;
+        long long wave = 0, inf = 0, leader = 0, town_archer = 0, castle = 0;
         float ratio_leader = 0.0f, ratio_town_archer = 0.0f, ratio_castle = 0.0f;
         int comma_count = 0;
         for (size_t i = 0; i < L; ++i) {
             if (line[i] == ',') comma_count++;
         }
 
-        int scanned9 = sscanf(line, "%31[^,],%d,%d,%d,%d,%d,%f,%f,%f",
+        int scanned9 = sscanf(line, "%31[^,],%lld,%lld,%lld,%lld,%lld,%f,%f,%f",
                               datebuf, &wave, &inf, &leader, &town_archer, &castle,
                               &ratio_leader, &ratio_town_archer, &ratio_castle);
-        int scanned6 = sscanf(line, "%31[^,],%d,%d,%d,%d,%d",
+        int scanned6 = sscanf(line, "%31[^,],%lld,%lld,%lld,%lld,%lld",
                              datebuf, &wave, &inf, &leader, &town_archer, &castle);
 
         if (comma_count >= 8 && scanned9 == 9) {
-            // keep it as the last valid record
             strncpy(last_datebuf, datebuf, sizeof(last_datebuf)-1);
             last_datebuf[sizeof(last_datebuf)-1] = '\0';
             last_wave = wave;
@@ -126,8 +121,8 @@ int load_last_player_data(Player *p)
             last_ratios.castle = ratio_castle;
             found = 1;
         } else if (scanned6 == 6 && (comma_count == 5 || comma_count == 6)) {
-            int ignored_hero = 0;
-            int scanned7 = sscanf(line, "%31[^,],%d,%d,%d,%d,%d,%d",
+            long long ignored_hero = 0;
+            int scanned7 = sscanf(line, "%31[^,],%lld,%lld,%lld,%lld,%lld,%lld",
                                   datebuf, &wave, &inf, &leader, &ignored_hero, &town_archer, &castle);
             if (comma_count == 5 && scanned6 == 6) {
                 strncpy(last_datebuf, datebuf, sizeof(last_datebuf)-1);
@@ -157,9 +152,8 @@ int load_last_player_data(Player *p)
         fprintf(stderr, "Warning: Could not properly close '%s'.\n", PLAYER_DATA_FILE);
     }
 
-    if (!found) return 0; // no valid records 
+    if (!found) return 0;
 
-    // load Player struct with last valid record
     strncpy(p->last_update, last_datebuf, sizeof(p->last_update)-1);
     p->last_update[sizeof(p->last_update)-1] = '\0';
     p->wave = last_wave;
@@ -266,7 +260,7 @@ int save_custom_hero(const CustomHero *hero)
         return 0;
     }
 
-    int ret = fprintf(f, "%s,%f,%d\n", hero->name, hero->target_ratio, hero->level);
+    int ret = fprintf(f, "%s,%f,%lld\n", hero->name, hero->target_ratio, hero->level);
     if (ret < 0) {
         fprintf(stderr, "Error: Failed to write to '%s'.\n", CUSTOM_HEROES_FILE);
         fclose(f);
@@ -296,7 +290,7 @@ int save_custom_heroes(const CustomHero *heroes, int hero_count)
     }
 
     for (int i = 0; i < hero_count; ++i) {
-        if (fprintf(f, "%s,%.6f,%d\n", heroes[i].name, heroes[i].target_ratio, heroes[i].level) < 0) {
+        if (fprintf(f, "%s,%.6f,%lld\n", heroes[i].name, heroes[i].target_ratio, heroes[i].level) < 0) {
             fclose(f);
             return 0;
         }
@@ -341,8 +335,8 @@ int load_custom_heroes(CustomHero *heroes, int max_heroes)
 
         char name[64] = {0};
         float target_ratio = 0.0f;
-        int level = 0;
-        int scanned = sscanf(line, "%63[^,],%f,%d", name, &target_ratio, &level);
+        long long level = 0;
+        int scanned = sscanf(line, "%63[^,],%f,%lld", name, &target_ratio, &level);
         if (scanned == 3) {
             strncpy(heroes[count].name, name, sizeof(heroes[count].name) - 1);
             heroes[count].name[sizeof(heroes[count].name) - 1] = '\0';
@@ -428,6 +422,25 @@ int load_pace_data(PaceInputs *inputs)
     return loaded;
 }
 
+static void reverse_progress_range(ProgressData *arr, int start, int end)
+{
+    while (start < end) {
+        ProgressData tmp = arr[start];
+        arr[start] = arr[end];
+        arr[end] = tmp;
+        start++;
+        end--;
+    }
+}
+
+// In-place left rotation (reversal algorithm) so no extra buffer is needed.
+static void rotate_progress_left(ProgressData *arr, int count, int shift)
+{
+    reverse_progress_range(arr, 0, shift - 1);
+    reverse_progress_range(arr, shift, count - 1);
+    reverse_progress_range(arr, 0, count - 1);
+}
+
 int read_progress_history(const char *filename, ProgressData *out, int max_entries)
 {
     if (!out || max_entries <= 0 || !filename) return 0;
@@ -439,29 +452,37 @@ int read_progress_history(const char *filename, ProgressData *out, int max_entri
     }
 
     char line[512];
-    int count = 0;
+    ProgressData first_entry;
+    int has_first = 0;
+    long long total_valid = 0;
+    int lineno = 0;
 
-    // read line by line (parse CSV)
-    while (fgets(line, sizeof(line), f) && count < max_entries) {
+    // out[] is used as a circular buffer holding the most recent max_entries rows.
+    while (fgets(line, sizeof(line), f)) {
+        lineno++;
 
         size_t L = strlen(line);
         while (L > 0 && (line[L-1] == '\n' || line[L-1] == '\r')) { line[--L] = '\0'; }
 
         if (L == 0) continue;
 
-        static int lineno = 0;
-        lineno++;
-
         char datebuf[64];
-        int wave = 0, inf = 0, leader = 0;
-        int scanned = sscanf(line, "%63[^,],%d,%d,%d", datebuf, &wave, &inf, &leader);
+        long long wave = 0, inf = 0, leader = 0;
+        int scanned = sscanf(line, "%63[^,],%lld,%lld,%lld", datebuf, &wave, &inf, &leader);
         if (scanned >= 3) {
-            // keep date,wave,inf ; ignore other fields if missing
-            strncpy(out[count].date, datebuf, sizeof(out[count].date)-1);
-            out[count].date[sizeof(out[count].date)-1] = '\0';
-            out[count].wave = wave;
-            out[count].infinity_castle_level = inf;
-            count++;
+            ProgressData entry;
+            strncpy(entry.date, datebuf, sizeof(entry.date)-1);
+            entry.date[sizeof(entry.date)-1] = '\0';
+            entry.wave = wave;
+            entry.infinity_castle_level = inf;
+
+            if (!has_first) {
+                first_entry = entry;
+                has_first = 1;
+            }
+
+            out[total_valid % max_entries] = entry;
+            total_valid++;
         } else {
             fprintf(stderr, "Nota: riga %d ignorata (corrotta o formato sbagliato): %s\n", lineno, line);
         }
@@ -470,6 +491,21 @@ int read_progress_history(const char *filename, ProgressData *out, int max_entri
     if (fclose(f) != 0) {
         fprintf(stderr, "Warning: Could not properly close '%s'.\n", filename);
     }
-    
-    return count;   
+
+    if (total_valid == 0) {
+        return 0;
+    }
+
+    if (total_valid <= max_entries) {
+        return (int)total_valid;
+    }
+
+    // More rows than capacity: rotate the buffer into chronological order, then
+    // keep the true first record (needed for all-time stats) plus the most recent entries.
+    int oldest_index = (int)(total_valid % max_entries);
+    if (oldest_index != 0) {
+        rotate_progress_left(out, max_entries, oldest_index);
+    }
+    out[0] = first_entry;
+    return max_entries;
 }

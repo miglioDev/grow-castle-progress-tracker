@@ -884,10 +884,9 @@ static void DrawRatioSuggestionTab() {
     DrawSectionBreak();
     DrawSectionHeading("Custom");
     if (g_custom_hero_count > 0) {
-        if (ImGui::BeginTable("custom_ratio_table", 6, kRatioTableFlags)) {
+        if (ImGui::BeginTable("custom_ratio_table", 5, kRatioTableFlags)) {
             ImGui::TableSetupColumn("Subject");
             ImGui::TableSetupColumn("Level");
-            ImGui::TableSetupColumn("Custom Hero Name");
             ImGui::TableSetupColumn("Target Ratio");
             ImGui::TableSetupColumn("Current ratio");
             ImGui::TableSetupColumn("Lvl difference");
@@ -900,9 +899,8 @@ static void DrawRatioSuggestionTab() {
             for (int i = 0; i < g_custom_hero_count; ++i) {
                 CustomHero& hero = g_custom_heroes[i];
                 ImGui::TableNextRow();
-                ImGui::TableNextColumn(); ImGui::Text("Custom Hero");
-                ImGui::TableNextColumn(); ImGui::Text("%lld", hero.level);
                 ImGui::TableNextColumn(); ImGui::Text("%s", hero.name);
+                ImGui::TableNextColumn(); ImGui::Text("%lld", hero.level);
                 ImGui::TableNextColumn();
                 float current_ratio = (g_player.wave > 0) ? (float)((double)hero.level / (double)g_player.wave) : 0.0f;
                 ImGui::SetNextItemWidth(-1.0f);
@@ -1197,7 +1195,7 @@ static void DrawPaceAnalysisTab() {
     }
 
     ImGui::Spacing();
-    DrawSectionHeading("TAP HEROES");
+    DrawSectionHeading("TAB HEROES");
     bool ob = g_pace_inputs.ob != 0;
     bool mbf = g_pace_inputs.mbf != 0;
     if (ImGui::Checkbox("OB", &ob)) {

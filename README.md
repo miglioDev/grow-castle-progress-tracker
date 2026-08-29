@@ -5,32 +5,25 @@
 ![C Language](https://img.shields.io/badge/Language-C-blue.svg)
 ![C++ Language](https://img.shields.io/badge/Language-C%2B%2B-blue.svg)
 ![MIT License](https://img.shields.io/badge/License-MIT-green.svg)
-![Version](https://img.shields.io/badge/Version-4.0.0-orange.svg)
+![Version](https://img.shields.io/badge/Version-4.1.0-orange.svg)
+
+If you find this project useful, please consider giving it a ⭐ it costs nothing and helps other Grow Castle players discover it.
+
+## Table of Contents
+
+- [Why?](#why)
+- [Features Preview](#features-preview)
+- [Download & Installation](#download--installation)
+- [Build from Source](#build-from-source)
+- [How to Use](#how-to-use)
+- [Feedback & Contact](#feedback--contact)
+- [License](#license)
 
 ## Why?
 
-Hi, I'm miglioDev, and I've been playing Grow Castle for a few years now.
+I'm a CS student and a long-time Grow Castle player who built this project to organize and share the metrics, formulas, and tools I've found useful for tracking progress, hopefully it can help other players too!
 
-I created this tool because I wanted a complete way to track my progress over the long term, analyze my growth, check ratios, and calculate upgrade costs and profit, all in one place.
-
-So I started developing this application: a dedicated progress tracker built specifically for Grow Castle players.
-
-The application works offline at runtime, and all data is stored locally on your computer. No accounts, cloud services and it is also cross-platform and works on Windows, Linux, and macOS.
-
-I hope this tool can help other players track their progress, plan their upgrades, and push their waves even further! 
-
-## Features
-
-- **Player data tracking:** Save wave, Infinity Castle, Leader, Town Archer, and Castle levels with timestamps. Keep a local history of every saved snapshot, delete the latest snapshot when needed, and add custom heroes or towers with their own levels and target ratios.
-- **Ratio and economy analysis:** Compare current levels with recommended ratios, edit the targets, inspect level gaps, and review Infinity Castle colony gold production.
-- **Investment planning:** See the gold invested in each unit, its percentage of the total investment, the cost to reach the current target, and the projected cost for the next period.
-- **Pace and season analysis:** Calculate RWPH, WPH, waves per day, and waves per five-day season from Devil Horn, game speed, horns, Chrono, and tap heroes. Compare the calculated pace with real progress snapshots and estimate downtime for selectable periods.
-- **Profit estimates:** Estimate TAB gold for the latest tracked period and for a future projection. The estimate uses existing RWPH, the starting wave, the active period, and the calculated downtime; no extra gameplay input is required.
-- **Progress history:** Review the Infinity Castle-to-wave ratio over time in a graph and table.
-- **Upgrade costs:** Calculate the gold required to move Castle, Town Archers, or Leader/Hero/Tower units from one level to another.
-- **Local and cross-platform:** The application works offline, stores data in local CSV files, and supports Windows, Linux, and macOS.
-
-##  Features Preview
+## Features Preview
 
 ### Player Data
 
@@ -61,23 +54,26 @@ Calculate your wave pace, seasonal progress, and estimated downtime from your cu
 Review Infinity Castle gold production and follow your Infinity Castle-to-wave ratio over time.
 
 ![IC Stats and History](screenshots/05_IC_stats.png)
+
+### Upgrading Cost & GAB profit
+Calculate the upgrade costs for Heroes, Leaders, Towers, Castle, and Town Archers. 
+Also, by entering your own values, check whether GAB is profitable and sustainable.
+
+![Cost & GAB profit](screenshots/06_Cost_GAB.png)
+
 ---
 
 ## Download & Installation
 
-The easiest way to use Grow Castle Progress Tracker is to download the latest release from GitHub.
+Pre-built binaries are available for Windows. Linux and macOS users can build from source. See [Build from Source](#build-from-source) below.
 
 ### Windows
-
-Follow the installation tutorial This tutorial is valid from version 3 onwards:
-
-[![Windows Installation Guide](https://img.youtube.com/vi/GamVHt7rb6Y/maxresdefault.jpg)](https://www.youtube.com/watch?v=GamVHt7rb6Y)
 
 1. Download the latest Windows ZIP file from the [Releases](../../releases) page.
 2. Extract the ZIP file to your preferred location.
 3. Open the extracted folder and run `GrowCastleProgressTracker.exe`.
 
-Windows may show a "Windows protected your PC" warning because the application is not digitally signed yet.
+Windows may show a "Windows protected your PC" warning because the application is not digitally signed.
 
 This is expected for independent open-source applications. The source code is publicly available on GitHub, and anyone can inspect how the application works.
 
@@ -90,7 +86,13 @@ Your progress data is stored locally inside the `data` folder.
 
 ---
 
-## Build & Run (For Developers)
+Follow the installation tutorial This tutorial is valid from version 3 onwards:
+
+[![Windows Installation Guide](https://img.youtube.com/vi/GamVHt7rb6Y/maxresdefault.jpg)](https://www.youtube.com/watch?v=GamVHt7rb6Y)
+
+---
+
+## Build from Source
 
 This section explains how to compile the application directly from the source code.
 Download the repository and open a terminal in its root directory. The project uses CMake to build the graphical application.
@@ -147,7 +149,11 @@ All your data is stored locally inside the `/data` folder using a CSV file and i
 
 Have feedback, suggestions, or found a bug?
 
-Feel free to reach out! You can find me on the official Grow Castle Discord server under **@miglioDev**.
+Feel free to Open an issue on GitHub or reach out! You can find me on the official Grow Castle Discord server under **@miglioDev**.
+
+## License
+
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
 ---
 

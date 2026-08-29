@@ -36,7 +36,7 @@ set(CORE_SOURCES
     ${SRC_DIR}/upgrading.c
     ${SRC_DIR}/investment.c
     ${SRC_DIR}/pace_analysis.c
-    ${SRC_DIR}/profit.c
+    ${SRC_DIR}/gpw.c
 )
 
 set(GUI_SOURCES
@@ -110,17 +110,17 @@ target_include_directories(pace_analysis_tests
 
 add_test(NAME pace_analysis_tests COMMAND pace_analysis_tests)
 
-add_executable(profit_tests
-    ${SRC_DIR}/profit.c
-    tests/profit_tests.cpp
+add_executable(gpw_tests
+    ${SRC_DIR}/gpw.c
+    tests/gpw_tests.cpp
 )
 
-target_include_directories(profit_tests
+target_include_directories(gpw_tests
     PRIVATE
         ${INC_DIR}
 )
 
-add_test(NAME profit_tests COMMAND profit_tests)
+add_test(NAME gpw_tests COMMAND gpw_tests)
 
 add_executable(investment_tests
     ${SRC_DIR}/upgrading.c

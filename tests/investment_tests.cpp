@@ -10,6 +10,19 @@ static void testCostFunction() {
     assert(cost_function(UNIT_TYPE_CASTLE, 0.0) == 0.0);
 }
 
+static void testHeroTieredCostFunction() {
+    const double first_tier_cost = 3000.0 * (5000.0 * 4999.0 / 2.0);
+    const double second_tier_cost = 4000.0 * (10000.0 * 9999.0 / 2.0 - 5000.0 * 4999.0 / 2.0);
+
+    assert(cost_function(UNIT_TYPE_LEADER, 1.0) == 0.0);
+    assert(fabs(cost_function(UNIT_TYPE_LEADER, 5000.0) - first_tier_cost) < 1e-6);
+    assert(fabs(cost_function(UNIT_TYPE_LEADER, 10000.0) - (first_tier_cost + second_tier_cost)) < 1e-6);
+    assert(fabs(cost_function(UNIT_TYPE_LEADER, 10001.0)
+        - (first_tier_cost + second_tier_cost + 50000000.0)) < 1e-6);
+    assert(fabs(cost_function(UNIT_TYPE_CUSTOM_HERO, 5001.0)
+        - (first_tier_cost + 20000000.0)) < 1e-6);
+}
+
 static void testInvestmentPercentages() {
     InvestmentMetrics metrics[2] = {};
     metrics[0].investment_gold = 50000.0;
@@ -32,6 +45,7 @@ static void testCostToTargetNextPeriod() {
 
 int main() {
     testCostFunction();
+    testHeroTieredCostFunction();
     testInvestmentPercentages();
     testCostToTargetNextPeriod();
     std::printf("investment_tests: all checks passed\n");

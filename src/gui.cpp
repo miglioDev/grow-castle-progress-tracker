@@ -13,7 +13,7 @@
 #include "investment.h"
 #include "graph.h"
 #include "pace_analysis.h"
-#include "profit.h"
+#include "gpw.h"
 
 static Player g_player = {0};
 static ProgressData g_progress[300] = {0};
@@ -26,6 +26,12 @@ static long long g_upgrade_from = 1;
 static long long g_upgrade_to = 2;
 static double g_upgrade_cost = 0.0;
 static bool g_upgrade_ready = false;
+static long long g_gpw_samples[16] = {0};
+static int g_gpw_sample_count = 1;
+static const double kGpwCostPerWave = 456.0;
+static GpwAnalysis g_gpw_analysis = {};
+static GpwCalculationError g_gpw_error = GPW_CALCULATION_NO_SAMPLES;
+static bool g_gpw_ready = false;
 
 static float g_ratio_leader = 0.0f;
 static float g_ratio_colony = 0.0f;
@@ -416,6 +422,14 @@ static void FormatGoldValue(double amount, char* out, size_t out_size) {
     }
 }
 
+static void FormatGpwResultValue(double amount, char* out, size_t out_size) {
+    if (amount >= 1000000.0) {
+        FormatGoldValue(amount, out, out_size);
+    } else {
+        snprintf(out, out_size, "%.2f", amount);
+    }
+}
+
 static void FormatProfitValue(double amount, char* out, size_t out_size) {
     if (amount >= 1000000000000.0) {
         snprintf(out, out_size, "%.2fT", amount / 1000000000000.0);
@@ -448,8 +462,6 @@ static void DrawInvestmentAndCostSection() {
 
     rows[row_count++] = {"Leader", calculate_investment_metrics(UNIT_TYPE_LEADER, g_player.leader_level,
         g_player.recommended_ratios.leader, g_player.wave, pace_wph, projection_hours)};
-    rows[row_count++] = {"Infinity Castle", calculate_investment_metrics(UNIT_TYPE_INFINITY_CASTLE,
-        g_player.infinity_castle_level, g_ratio_colony, g_player.wave, pace_wph, projection_hours)};
     rows[row_count++] = {"Town Archer", calculate_investment_metrics(UNIT_TYPE_TOWN_ARCHERS,
         g_player.town_archer_level, g_player.recommended_ratios.town_archer, g_player.wave, pace_wph, projection_hours)};
     rows[row_count++] = {"Castle", calculate_investment_metrics(UNIT_TYPE_CASTLE, g_player.castle_level,
@@ -516,175 +528,177 @@ static void DrawInvestmentAndCostSection() {
         ImGui::EndTable();
     }
 
-    char investment_total[64];
-    char now_total[64];
-    char next_total[64];
-    FormatGoldValue(total_investment, investment_total, sizeof(investment_total));
-    FormatGoldValue(total_now, now_total, sizeof(now_total));
-    FormatGoldValue(total_next_period, next_total, sizeof(next_total));
-    ImGui::Spacing();
-    ImGui::Text("Total Investment: %s Gold", investment_total);
-    ImGui::Text("Total Cost to Target (now): %s Gold", now_total);
-    if (pace_available) {
-        ImGui::Text("Total Cost to Target (next period): %s Gold", next_total);
-    }
-
     ImGui::Spacing();
     DrawSectionHeading("GOLD DISTRIBUTION");
     const ImU32 colors[] = {IM_COL32(74, 167, 220, 255), IM_COL32(228, 151, 66, 255), IM_COL32(112, 190, 116, 255), IM_COL32(214, 94, 94, 255), IM_COL32(174, 128, 220, 255)};
-    double distribution_total = 0.0;
-    for (int index = 0; index < row_count; ++index) {
-        if (strcmp(rows[index].name, "Infinity Castle") != 0) {
-            distribution_total += rows[index].metrics.investment_gold;
+    if (ImGui::BeginChild("gold_distribution_chart", ImVec2(0.0f, 0.0f), true)) {
+        if (ImGui::BeginTable("gold_distribution_bars", 3,
+            ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_RowBg)) {
+            ImGui::TableSetupColumn("Category", ImGuiTableColumnFlags_WidthFixed, 150.0f);
+            ImGui::TableSetupColumn("Investment", ImGuiTableColumnFlags_WidthStretch);
+            ImGui::TableSetupColumn("Share", ImGuiTableColumnFlags_WidthFixed, 70.0f);
+            bool rendered[36] = {};
+            for (int chart_row = 0; chart_row < row_count; ++chart_row) {
+                int index = -1;
+                for (int candidate = 0; candidate < row_count; ++candidate) {
+                    if (!rendered[candidate] && (index < 0
+                        || rows[candidate].metrics.investment_percent > rows[index].metrics.investment_percent)) {
+                        index = candidate;
+                    }
+                }
+                rendered[index] = true;
+                const double distribution_percent = rows[index].metrics.investment_percent;
+                ImGui::TableNextRow();
+                ImGui::TableNextColumn();
+                ImGui::TextUnformatted(rows[index].name);
+                ImGui::TableNextColumn();
+                ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImGui::ColorConvertU32ToFloat4(colors[index % IM_ARRAYSIZE(colors)]));
+                ImGui::ProgressBar((float)distribution_percent, ImVec2(-1.0f, 20.0f), "");
+                ImGui::PopStyleColor();
+                ImGui::TableNextColumn();
+                ImGui::Text("%.1f%%", distribution_percent * 100.0);
+            }
+            ImGui::EndTable();
         }
-    }
-    ImGui::SameLine();
-    ImGui::TextDisabled("Legend:");
-    for (int index = 0; index < row_count; ++index) {
-        if (strcmp(rows[index].name, "Infinity Castle") == 0) {
-            continue;
-        }
-        double distribution_percent = distribution_total > 0.0
-            ? rows[index].metrics.investment_gold / distribution_total
-            : 0.0;
-        ImGui::SameLine();
-        ImGui::ColorButton(("##distribution_color_" + std::to_string(index)).c_str(),
-            ImGui::ColorConvertU32ToFloat4(colors[index % IM_ARRAYSIZE(colors)]), ImGuiColorEditFlags_NoTooltip, ImVec2(12.0f, 12.0f));
-        ImGui::SameLine(0.0f, 3.0f);
-        ImGui::Text("%s %.1f%%", rows[index].name, distribution_percent * 100.0);
-    }
 
-    ImVec2 bar_start = ImGui::GetCursorScreenPos();
-    const float bar_width = ImGui::GetContentRegionAvail().x;
-    const float bar_height = 22.0f;
-    ImDrawList* draw_list = ImGui::GetWindowDrawList();
-    float offset = 0.0f;
-    for (int index = 0; index < row_count; ++index) {
-        if (strcmp(rows[index].name, "Infinity Castle") == 0) {
-            continue;
+        char investment_total[64];
+        char now_total[64];
+        char next_total[64];
+        FormatGoldValue(total_investment, investment_total, sizeof(investment_total));
+        FormatGoldValue(total_now, now_total, sizeof(now_total));
+        FormatGoldValue(total_next_period, next_total, sizeof(next_total));
+        ImGui::Spacing();
+        ImGui::Text("Total invested: %s Gold", investment_total);
+        ImGui::Text("Total cost to target now: %s Gold", now_total);
+        if (pace_available) {
+            ImGui::Text("Total cost to target next period: %s Gold", next_total);
+        } else {
+            ImGui::TextDisabled("Total cost to target next period: N/A");
         }
-        float segment_width = distribution_total > 0.0f
-            ? bar_width * (float)(rows[index].metrics.investment_gold / distribution_total)
-            : 0.0f;
-        ImVec2 segment_min(bar_start.x + offset, bar_start.y);
-        ImVec2 segment_max(bar_start.x + offset + segment_width, bar_start.y + bar_height);
-        draw_list->AddRectFilled(segment_min, segment_max, colors[index % IM_ARRAYSIZE(colors)]);
-        if (segment_width > 0.0f && ImGui::IsMouseHoveringRect(segment_min, segment_max)) {
-            char segment_gold[64];
-            FormatGoldValue(rows[index].metrics.investment_gold, segment_gold, sizeof(segment_gold));
-            double segment_percent = distribution_total > 0.0
-                ? rows[index].metrics.investment_gold / distribution_total
-                : 0.0;
-            ImGui::SetTooltip("%s\n%s Gold (%.1f%%)", rows[index].name, segment_gold, segment_percent * 100.0);
-        }
-        offset += segment_width;
     }
-    draw_list->AddRect(bar_start, ImVec2(bar_start.x + bar_width, bar_start.y + bar_height), IM_COL32(180, 180, 190, 255));
-    ImGui::Dummy(ImVec2(bar_width, bar_height));
+    ImGui::EndChild();
 }
 
 static void DrawPlayerDataTab() {
     ImGui::Text("Enter your player progress details and save them to the local CSV.");
     ImGui::Spacing();
-    DrawSectionHeading("INPUT SECTION");
-    ImGui::Spacing();
+    if (ImGui::BeginTable("player_data_layout", 2, ImGuiTableFlags_SizingStretchProp)) {
+        ImGui::TableSetupColumn("Input", ImGuiTableColumnFlags_WidthStretch, 0.55f);
+        ImGui::TableSetupColumn("Display", ImGuiTableColumnFlags_WidthStretch, 0.45f);
+        ImGui::TableNextRow();
 
-    ImGui::SetNextItemWidth(320.0f);
-    ImGui::InputScalar("Wave", ImGuiDataType_S64, &g_player.wave, &kInt64Step, &kInt64StepFast);
-    if (g_player.wave < 1) g_player.wave = 1;
-    ImGui::SetNextItemWidth(320.0f);
-    ImGui::InputScalar("Infinity Castle Level", ImGuiDataType_S64, &g_player.infinity_castle_level, &kInt64Step, &kInt64StepFast);
-    if (g_player.infinity_castle_level < 0) g_player.infinity_castle_level = 0;
-    ImGui::SetNextItemWidth(320.0f);
-    ImGui::InputScalar("Leader Level", ImGuiDataType_S64, &g_player.leader_level, &kInt64Step, &kInt64StepFast);
-    if (g_player.leader_level < 0) g_player.leader_level = 0;
-    ImGui::SetNextItemWidth(320.0f);
-    ImGui::InputScalar("Town Archer Level", ImGuiDataType_S64, &g_player.town_archer_level, &kInt64Step, &kInt64StepFast);
-    if (g_player.town_archer_level < 0) g_player.town_archer_level = 0;
-    ImGui::SetNextItemWidth(320.0f);
-    ImGui::InputScalar("Castle Level", ImGuiDataType_S64, &g_player.castle_level, &kInt64Step, &kInt64StepFast);
-    if (g_player.castle_level < 0) g_player.castle_level = 0;
-
-    PushPrimaryButtonStyle();
-    if (ImGui::Button("Save Player Data")) {
-        if (g_player.wave > 0 && g_player.infinity_castle_level > 0 && g_player.leader_level > 0 && g_player.town_archer_level > 0 && g_player.castle_level > 0) {
-            if (SavePlayerData()) {
-                MarkDataSaved("player_data");
-            }
-            ComputeRatios();
-        } else {
-            snprintf(g_status_message, sizeof(g_status_message), "Please enter positive values for all fields.");
-        }
-    }
-    ImGui::PopStyleColor(3);
-    DrawSaveConfirmation("player_data");
-    ImGui::SameLine();
-    PushDangerButtonStyle();
-    if (ImGui::Button("Delete Last Saved Data", ImVec2(220.0f, 0.0f))) {
-        if (load_last_player_data(&g_pending_player_deletion)) {
-            ImGui::OpenPopup("Delete Last Saved Player Data");
-        } else {
-            snprintf(g_status_message, sizeof(g_status_message), "No saved player data is available to delete.");
-        }
-    }
-    ImGui::PopStyleColor(3);
-
-    if (ImGui::BeginPopupModal("Delete Last Saved Player Data", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-        ImGui::Text("The following saved data will be permanently deleted:");
-        ImGui::Separator();
-        ImGui::Text("Date / Time: %s", g_pending_player_deletion.last_update);
-        ImGui::Text("Wave: %lld", g_pending_player_deletion.wave);
-        ImGui::Text("Infinity Castle: %lld", g_pending_player_deletion.infinity_castle_level);
-        ImGui::Text("Leader: %lld", g_pending_player_deletion.leader_level);
-        ImGui::Text("Town Archers: %lld", g_pending_player_deletion.town_archer_level);
-        ImGui::Text("Castle: %lld", g_pending_player_deletion.castle_level);
+        ImGui::TableSetColumnIndex(0);
+        DrawSectionHeading("INPUT SECTION");
         ImGui::Spacing();
-        ImGui::Text("Do you want to delete this saved data?");
-        PushDangerButtonStyle();
-        if (ImGui::Button("Delete", ImVec2(120.0f, 0.0f))) {
-            if (delete_last_player_record()) {
-                RefreshPlayerData();
-                RefreshProgressHistory();
+
+        ImGui::SetNextItemWidth(320.0f);
+        ImGui::InputScalar("Wave", ImGuiDataType_S64, &g_player.wave, &kInt64Step, &kInt64StepFast);
+        if (g_player.wave < 1) g_player.wave = 1;
+        ImGui::SetNextItemWidth(320.0f);
+        ImGui::InputScalar("Infinity Castle Level", ImGuiDataType_S64, &g_player.infinity_castle_level, &kInt64Step, &kInt64StepFast);
+        if (g_player.infinity_castle_level < 0) g_player.infinity_castle_level = 0;
+        ImGui::SetNextItemWidth(320.0f);
+        ImGui::InputScalar("Leader Level", ImGuiDataType_S64, &g_player.leader_level, &kInt64Step, &kInt64StepFast);
+        if (g_player.leader_level < 0) g_player.leader_level = 0;
+        ImGui::SetNextItemWidth(320.0f);
+        ImGui::InputScalar("Town Archer Level", ImGuiDataType_S64, &g_player.town_archer_level, &kInt64Step, &kInt64StepFast);
+        if (g_player.town_archer_level < 0) g_player.town_archer_level = 0;
+        ImGui::SetNextItemWidth(320.0f);
+        ImGui::InputScalar("Castle Level", ImGuiDataType_S64, &g_player.castle_level, &kInt64Step, &kInt64StepFast);
+        if (g_player.castle_level < 0) g_player.castle_level = 0;
+
+        PushPrimaryButtonStyle();
+        if (ImGui::Button("Save Player Data")) {
+            if (g_player.wave > 0 && g_player.infinity_castle_level > 0 && g_player.leader_level > 0 && g_player.town_archer_level > 0 && g_player.castle_level > 0) {
+                if (SavePlayerData()) {
+                    MarkDataSaved("player_data");
+                }
                 ComputeRatios();
-                snprintf(g_status_message, sizeof(g_status_message), "Last saved player data deleted successfully.");
             } else {
-                snprintf(g_status_message, sizeof(g_status_message), "Failed to delete the last saved player data.");
+                snprintf(g_status_message, sizeof(g_status_message), "Please enter positive values for all fields.");
             }
-            ImGui::CloseCurrentPopup();
         }
         ImGui::PopStyleColor(3);
+        DrawSaveConfirmation("player_data");
         ImGui::SameLine();
-        if (ImGui::Button("Cancel", ImVec2(120.0f, 0.0f))) {
-            ImGui::CloseCurrentPopup();
+        PushDangerButtonStyle();
+        if (ImGui::Button("Delete Last Saved Data", ImVec2(220.0f, 0.0f))) {
+            if (load_last_player_data(&g_pending_player_deletion)) {
+                ImGui::OpenPopup("Delete Last Saved Player Data");
+            } else {
+                snprintf(g_status_message, sizeof(g_status_message), "No saved player data is available to delete.");
+            }
         }
-        ImGui::EndPopup();
-    }
+        ImGui::PopStyleColor(3);
 
-    DrawSectionBreak();
-    DrawSectionHeading("DISPLAY SECTION");
-    ImGui::Spacing();
-    if (ImGui::BeginTable("player_display_table", 2, ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_RowBg)) {
-        ImGui::TableSetupColumn("Metric", ImGuiTableColumnFlags_WidthStretch, 0.55f);
-        ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch, 0.45f);
-        const char* labels[] = {"Wave", "Infinity Castle Level", "Leader Level", "Town Archer Level", "Castle Level", "Last Update"};
-        const char* last_update = g_player.last_update[0] ? g_player.last_update : "N/A";
-        char values[6][32];
-        snprintf(values[0], sizeof(values[0]), "%lld", g_player.wave);
-        snprintf(values[1], sizeof(values[1]), "%lld", g_player.infinity_castle_level);
-        snprintf(values[2], sizeof(values[2]), "%lld", g_player.leader_level);
-        snprintf(values[3], sizeof(values[3]), "%lld", g_player.town_archer_level);
-        snprintf(values[4], sizeof(values[4]), "%lld", g_player.castle_level);
-        snprintf(values[5], sizeof(values[5]), "%s", last_update);
-        for (int index = 0; index < 6; ++index) {
-            ImGui::TableNextRow();
-            ImGui::TableNextColumn(); ImGui::TextUnformatted(labels[index]);
-            ImGui::TableNextColumn(); ImGui::TextUnformatted(values[index]);
+        if (ImGui::BeginPopupModal("Delete Last Saved Player Data", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+            ImGui::Text("The following saved data will be permanently deleted:");
+            ImGui::Separator();
+            ImGui::Text("Date / Time: %s", g_pending_player_deletion.last_update);
+            ImGui::Text("Wave: %lld", g_pending_player_deletion.wave);
+            ImGui::Text("Infinity Castle: %lld", g_pending_player_deletion.infinity_castle_level);
+            ImGui::Text("Leader: %lld", g_pending_player_deletion.leader_level);
+            ImGui::Text("Town Archers: %lld", g_pending_player_deletion.town_archer_level);
+            ImGui::Text("Castle: %lld", g_pending_player_deletion.castle_level);
+            ImGui::Spacing();
+            ImGui::Text("Do you want to delete this saved data?");
+            PushDangerButtonStyle();
+            if (ImGui::Button("Delete", ImVec2(120.0f, 0.0f))) {
+                if (delete_last_player_record()) {
+                    RefreshPlayerData();
+                    RefreshProgressHistory();
+                    ComputeRatios();
+                    snprintf(g_status_message, sizeof(g_status_message), "Last saved player data deleted successfully.");
+                } else {
+                    snprintf(g_status_message, sizeof(g_status_message), "Failed to delete the last saved player data.");
+                }
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::PopStyleColor(3);
+            ImGui::SameLine();
+            if (ImGui::Button("Cancel", ImVec2(120.0f, 0.0f))) {
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
         }
+
+        ImGui::TableSetColumnIndex(1);
+        const float display_height = ImGui::GetTextLineHeightWithSpacing() * (9.0f + g_custom_hero_count);
+        if (ImGui::BeginChild("player_display_panel", ImVec2(0.0f, display_height), true)) {
+            DrawSectionHeading("DISPLAY SECTION");
+            ImGui::Spacing();
+            if (ImGui::BeginTable("player_display_table", 2, ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_RowBg)) {
+                ImGui::TableSetupColumn("Metric", ImGuiTableColumnFlags_WidthStretch, 0.55f);
+                ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch, 0.45f);
+                const char* labels[] = {"Wave", "Infinity Castle Level", "Leader Level", "Town Archer Level", "Castle Level"};
+                char values[5][32];
+                snprintf(values[0], sizeof(values[0]), "%lld", g_player.wave);
+                snprintf(values[1], sizeof(values[1]), "%lld", g_player.infinity_castle_level);
+                snprintf(values[2], sizeof(values[2]), "%lld", g_player.leader_level);
+                snprintf(values[3], sizeof(values[3]), "%lld", g_player.town_archer_level);
+                snprintf(values[4], sizeof(values[4]), "%lld", g_player.castle_level);
+                for (int index = 0; index < 5; ++index) {
+                    ImGui::TableNextRow();
+                    ImGui::TableNextColumn(); ImGui::TextUnformatted(labels[index]);
+                    ImGui::TableNextColumn(); ImGui::TextUnformatted(values[index]);
+                }
+                for (int index = 0; index < g_custom_hero_count; ++index) {
+                    ImGui::TableNextRow();
+                    ImGui::TableNextColumn(); ImGui::TextUnformatted(g_custom_heroes[index].name);
+                    ImGui::TableNextColumn(); ImGui::Text("Level %lld", g_custom_heroes[index].level);
+                }
+                ImGui::TableNextRow();
+                ImGui::TableNextColumn(); ImGui::TextUnformatted("Last Update");
+                ImGui::TableNextColumn(); ImGui::TextUnformatted(g_player.last_update[0] ? g_player.last_update : "N/A");
+                ImGui::EndTable();
+            }
+        }
+        ImGui::EndChild();
         ImGui::EndTable();
     }
 
     DrawSectionBreak();
-    DrawSectionHeading("Custom");
+    DrawSectionHeading("Add Custom");
     ImGui::SetNextItemWidth(420.0f);
     ImGui::InputText("Hero / Tower Name", g_custom_hero_name, IM_ARRAYSIZE(g_custom_hero_name));
     ImGui::SetNextItemWidth(420.0f);
@@ -694,7 +708,7 @@ static void DrawPlayerDataTab() {
     ImGui::SetNextItemWidth(420.0f);
     ImGui::InputScalar("Current Level", ImGuiDataType_S64, &g_custom_hero_level, &kInt64Step, &kInt64StepFast);
     PushPrimaryButtonStyle();
-    if (ImGui::Button("Add Custom Hero")) {
+    if (ImGui::Button("Save New Custom Hero")) {
         AddCustomHeroFromGui();
     }
     ImGui::PopStyleColor(3);
@@ -702,6 +716,7 @@ static void DrawPlayerDataTab() {
 
     if (g_custom_hero_count > 0) {
         ImGui::Spacing();
+        DrawSubsectionHeading("Your Custom Unit");
         ImGui::BeginChild("custom_hero_list", ImVec2(0, 120), true);
         for (int i = 0; i < g_custom_hero_count; ++i) {
             CustomHero& hero = g_custom_heroes[i];
@@ -946,9 +961,15 @@ static void DrawColonyStatsTab() {
     ImGui::Text("Colony Ratio: %.4f", g_ratio_colony);
     ImGui::Spacing();
     DrawSubsectionHeading("GOLD PRODUCTION");
-    ImGui::Text("Base Gold: %.0f", g_colony_gold);
-    ImGui::Text("Gold with XP Skill Buff (x1.20): %.0f", g_gold_xp);
-    ImGui::Text("Gold with Whip + Skill (x1.35): %.0f", g_gold_whip);
+    char base_gold_text[64];
+    char xp_gold_text[64];
+    char whip_gold_text[64];
+    FormatProfitValue(g_colony_gold, base_gold_text, sizeof(base_gold_text));
+    FormatProfitValue(g_gold_xp, xp_gold_text, sizeof(xp_gold_text));
+    FormatProfitValue(g_gold_whip, whip_gold_text, sizeof(whip_gold_text));
+    ImGui::Text("Base Gold: %s", base_gold_text);
+    ImGui::Text("Gold with XP Skill Buff (x1.20): %s", xp_gold_text);
+    ImGui::Text("Gold with Whip + Skill (x1.35): %s", whip_gold_text);
 }
 
 static void DrawProgressHistoryTab() {
@@ -1078,38 +1099,79 @@ static void DrawProgressHistoryTab() {
     }
 }
 
-static void DrawProfitEstimateSection()
+static void DrawGpwSection()
 {
-    HistoricalPaceStats historical_stats = CalculateHistoricalPaceStats(g_pace_history_period);
-    DrawSectionHeading("PROFIT ESTIMATE");
-    if (!historical_stats.isValid) {
-        ImGui::TextColored(UiColors::Muted, "%s", historical_stats.message);
+    DrawSectionHeading("GPW");
+    ImGui::Text("Check whether Gold Auto Battle is profitable at your current saved wave");
+    ImGui::Text("Wave reached: %lld", g_player.wave);
+    ImGui::SetNextItemWidth(180.0f);
+    ImGui::InputInt("Gold samples", &g_gpw_sample_count);
+    DrawHelpMarker("Enter the gold earned per GAB run. More samples make the calculation more reliable. GAB samples are not currently saved by the app.");
+    if (g_gpw_sample_count < 0) g_gpw_sample_count = 0;
+    if (g_gpw_sample_count > IM_ARRAYSIZE(g_gpw_samples)) g_gpw_sample_count = IM_ARRAYSIZE(g_gpw_samples);
+    for (int index = 0; index < g_gpw_sample_count; ++index) {
+        ImGui::SetNextItemWidth(260.0f);
+        ImGui::InputScalar(("Gold obtained##gpw_sample_" + std::to_string(index)).c_str(),
+            ImGuiDataType_S64, &g_gpw_samples[index], &kInt64Step, &kInt64StepFast);
+    }
+
+    PushPrimaryButtonStyle();
+    if (ImGui::Button("Calculate GPW")) {
+        double gold_samples[IM_ARRAYSIZE(g_gpw_samples)];
+        for (int index = 0; index < g_gpw_sample_count; ++index) {
+            gold_samples[index] = (double)g_gpw_samples[index];
+        }
+        g_gpw_error = calculate_gpw_analysis(gold_samples, g_gpw_sample_count,
+            (double)g_player.wave, kGpwCostPerWave, &g_gpw_analysis);
+        g_gpw_ready = g_gpw_error == GPW_CALCULATION_OK;
+    }
+    ImGui::PopStyleColor(3);
+
+    if (!g_gpw_ready) {
+        if (g_gpw_error == GPW_CALCULATION_NO_SAMPLES) {
+            ImGui::TextColored(UiColors::Danger, "Unable to calculate: enter at least one gold sample.");
+        } else if (g_gpw_error == GPW_CALCULATION_NEGATIVE_SAMPLE) {
+            ImGui::TextColored(UiColors::Danger, "Unable to calculate: gold samples cannot be negative.");
+        } else if (g_gpw_error == GPW_CALCULATION_INVALID_WAVE) {
+            ImGui::TextColored(UiColors::Danger, "Unable to calculate: save Player Data with a valid wave first.");
+        }
         return;
     }
 
-    const double tab_profit = calculate_tab_profit(
-        (double)g_pace_stats.rwph,
-        (double)historical_stats.referenceWave,
-        historical_stats.elapsedHours,
-        historical_stats.downtimeHours);
-    char tab_profit_text[64];
-    FormatProfitValue(tab_profit, tab_profit_text, sizeof(tab_profit_text));
-    ImGui::TextWrapped("Estimate of gold earned through TAB during the last tracked period, calculated from your real gameplay data - no additional input required.");
-    ImGui::Text("Period: %.2f days | Reference wave: %lld", historical_stats.elapsedHours / 24.0, historical_stats.referenceWave);
-    ImGui::PushStyleColor(ImGuiCol_ChildBg, UiColors::PanelBg);
-    ImGui::BeginChild("profit_estimate_panel", ImVec2(0.0f, 0.0f), ImGuiChildFlags_Borders);
-    ImGui::Text("TAB Profit: %s Gold", tab_profit_text);
-
-    const double projected_tab_profit = calculate_tab_profit(
-        (double)g_pace_stats.rwph,
-        (double)g_player.wave,
-        (double)g_projection_days * 24.0,
-        0.0);
-    char projected_tab_profit_text[64];
-    FormatProfitValue(projected_tab_profit, projected_tab_profit_text, sizeof(projected_tab_profit_text));
     ImGui::Spacing();
-    ImGui::Text("Next %d days (projected, no downtime):", g_projection_days);
-    ImGui::Text("TAB Profit: %s Gold", projected_tab_profit_text);
+    char gpw_average_text[64];
+    char gpw_maximum_text[64];
+    char gpw_minimum_text[64];
+    char profit_average_text[64];
+    char profit_maximum_text[64];
+    char profit_minimum_text[64];
+    FormatGpwResultValue(g_gpw_analysis.gpw.avg, gpw_average_text, sizeof(gpw_average_text));
+    FormatGpwResultValue(g_gpw_analysis.gpw.max, gpw_maximum_text, sizeof(gpw_maximum_text));
+    FormatGpwResultValue(g_gpw_analysis.gpw.min, gpw_minimum_text, sizeof(gpw_minimum_text));
+    FormatGpwResultValue(g_gpw_analysis.profit.avg < 0.0 ? -g_gpw_analysis.profit.avg : g_gpw_analysis.profit.avg,
+        profit_average_text, sizeof(profit_average_text));
+    FormatGpwResultValue(g_gpw_analysis.profit.max < 0.0 ? -g_gpw_analysis.profit.max : g_gpw_analysis.profit.max,
+        profit_maximum_text, sizeof(profit_maximum_text));
+    FormatGpwResultValue(g_gpw_analysis.profit.min < 0.0 ? -g_gpw_analysis.profit.min : g_gpw_analysis.profit.min,
+        profit_minimum_text, sizeof(profit_minimum_text));
+    ImGui::PushStyleColor(ImGuiCol_ChildBg, UiColors::PanelBg);
+    ImGui::BeginChild("gpw_result_panel", ImVec2(0.0f, 0.0f), ImGuiChildFlags_Borders);
+    DrawSubsectionHeading("RESULT");
+    ImGui::Text("Samples: %d", g_gpw_analysis.sampleCount);
+    ImGui::Text("GPW average: %s Gold/wave | max: %s | min: %s", gpw_average_text, gpw_maximum_text, gpw_minimum_text);
+    ImGui::Text("Profit per wave average: %s%s Gold/wave | max: %s%s | min: %s%s",
+        g_gpw_analysis.profit.avg < 0.0 ? "-" : "", profit_average_text,
+        g_gpw_analysis.profit.max < 0.0 ? "-" : "", profit_maximum_text,
+        g_gpw_analysis.profit.min < 0.0 ? "-" : "", profit_minimum_text);
+    ImGui::Spacing();
+    if (g_gpw_analysis.isProfitable) {
+        ImGui::TextColored(UiColors::Success, "Gold Auto Battle is profitable.");
+    } else {
+        ImGui::TextColored(UiColors::Danger, "Gold Auto Battle is running at a loss.");
+    }
+    if (g_gpw_analysis.reliabilityWarning) {
+        ImGui::TextColored(UiColors::Warning, "Fewer than five samples: this result may be unreliable.");
+    }
     ImGui::EndChild();
     ImGui::PopStyleColor();
 }
@@ -1127,7 +1189,7 @@ static void DrawUpgradingCostTab() {
 
     PushPrimaryButtonStyle();
     if (ImGui::Button("Compute Cost")) {
-        if (g_upgrade_from > 0 && g_upgrade_to > 0 && g_upgrade_to > g_upgrade_from) {
+        if (g_upgrade_from >= 0 && g_upgrade_to > g_upgrade_from) {
             UnitType unit_type = g_upgrade_type == 0 ? UNIT_TYPE_CASTLE
                 : (g_upgrade_type == 1 ? UNIT_TYPE_TOWN_ARCHERS : UNIT_TYPE_LEADER);
             g_upgrade_cost = cost_function(unit_type, (double)g_upgrade_to)
@@ -1157,7 +1219,7 @@ static void DrawUpgradingCostTab() {
     }
 
     DrawSectionBreak();
-    DrawProfitEstimateSection();
+    DrawGpwSection();
 }
 
 static void DrawPaceAnalysisTab() {
@@ -1258,78 +1320,142 @@ static void DrawPaceAnalysisTab() {
 }
 
 static void DrawInfoTab() {
-    ImGui::Text("Grow Castle Progress Tracker v4.0.0");
+
+    ImGui::BeginChild(
+        "info_header",
+        ImVec2(0, 125),
+        true,
+        ImGuiWindowFlags_NoScrollbar
+    );
+
+    ImGui::Indent(8.0f);
+    ImGui::Text("Grow Castle Progress Tracker");
+    ImGui::TextDisabled("v4.1.0 stable");
+
+    ImGui::Spacing();
+
     ImGui::Text("Built and maintained by miglioDev");
 
+    ImGui::Spacing();
+
     ImGui::TextLinkOpenURL(
-        "github.com/miglioDev/grow-castle-progress-tracker",
+        "GitHub Repository",
         "https://github.com/miglioDev/grow-castle-progress-tracker"
+    );
+    ImGui::Unindent(8.0f);
+
+    ImGui::EndChild();
+    ImGui::Spacing();
+    ImGui::Spacing();
+
+    DrawSubsectionHeading("ABOUT THE PROJECT");
+    ImGui::Spacing();
+
+    ImGui::TextWrapped(
+        "For further information about the project, how it works, "
+        "and the formulas used, please read the DOCUMENTATION.md "
+        "file on GitHub."
     );
 
     ImGui::Spacing();
 
     ImGui::TextWrapped(
-        "For further information on the project, how it works and formulas used please read the DOCUMENTATION.md file on the website\n"
-        "Have feedback, suggestions, or found a bug?\n"
-        "Feel free to reach out! You can find me on the official "
-        "Grow Castle Discord server under @miglioDev I’ll get back to you when I have the chance."
+        "Have feedback, suggestions, or found a bug? Open an issue "
+        "on GitHub, or reach out, you can found me on the official Grow Castle Discord "
+        "server under @miglioDev  I'll get back to you when I have "
+        "the chance."
+    );
+
+    ImGui::Spacing();
+
+    ImGui::TextLinkOpenURL(
+        "Report an issue on GitHub",
+        "https://github.com/miglioDev/grow-castle-progress-tracker/issues"
+    );
+
+    ImGui::Spacing();
+
+    ImGui::TextDisabled("Licensed under the MIT License.");
+
+    ImGui::Separator();
+    ImGui::Spacing();
+    ImGui::Spacing();
+
+    DrawSubsectionHeading("SUPPORT THE PROJECT");
+    ImGui::Spacing();
+
+    ImGui::TextWrapped(
+        "Enjoying the tool? A star on GitHub takes one click and "
+        "costs nothing, but it helps other players discover the "
+        "project and keeps me motivated to keep building it. "
+        "Sharing it with others player goes a long way too."
+    );
+
+    ImGui::Spacing();
+
+    ImGui::TextLinkOpenURL(
+        "Star on GitHub",
+        "https://github.com/miglioDev/grow-castle-progress-tracker"
     );
 
     ImGui::Separator();
     ImGui::Spacing();
+    ImGui::Spacing();
 
-    DrawSubsectionHeading("IMPORT / EXPORT DATA");
+    DrawSubsectionHeading("DATA & BACKUP");
     ImGui::Spacing();
 
     ImGui::TextWrapped(
         "All data is stored locally in the ./data folder. "
-        "You can import or export your progress by copying the CSV files "
-        "to another location."
+        "You can import or export your progress by copying the "
+        "CSV files to another location."
     );
 
+    ImGui::Spacing();
     ImGui::Spacing();
 
     DrawSubsectionHeading("STORED FILES");
-
-    ImGui::TextColored(
-        UiColors::Success,
-        "./data/player_data.csv"
-    );
-    ImGui::Text("Player progress and history");
-
-    ImGui::TextColored(
-        UiColors::Success,
-        "./data/custom_heroes.csv"
-    );
-    ImGui::Text("Custom hero names, ratios, and levels");
-
-    ImGui::TextColored(
-        UiColors::Success,
-        "./data/pace_data.csv"
-    );
-    ImGui::Text("Saved RWPH/WPH calculator options");
-
-    ImGui::Separator();
     ImGui::Spacing();
 
-    ImGui::TextWrapped(
-        "These files can also be shared with friends. "
-        "For example, sharing your data files allows you to compare "
-        "specific builds, player progress, hero levels, ratios, and "
-        "other saved information."
-    );
+    struct FileEntry {
+        const char* path;
+        const char* description;
+    };
+
+    static constexpr FileEntry kStoredFiles[] = {
+        { "./data/player_data.csv",   "All the standard player data" },
+        { "./data/custom_heroes.csv", "Custom hero names, ratios, and levels" },
+        { "./data/pace_data.csv",     "Saved RWPH/WPH calculator options" },
+    };
+
+    if (ImGui::BeginTable("stored_files_table", 2, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg)) {
+        ImGui::TableSetupColumn("File", ImGuiTableColumnFlags_WidthStretch);
+        ImGui::TableSetupColumn("Description", ImGuiTableColumnFlags_WidthStretch);
+        ImGui::TableHeadersRow();
+
+        for (const auto& entry : kStoredFiles) {
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+            ImGui::TextDisabled(entry.path);
+            ImGui::TableSetColumnIndex(1);
+            ImGui::TextWrapped(entry.description);
+        }
+
+        ImGui::EndTable();
+    }
 
     ImGui::Spacing();
-
-    ImGui::TextWrapped(
-        "Backup: copy all CSV files to a safe location. "
-        "Restore: copy them back into the ./data folder with the same "
-        "names, then restart the app."
-    );
-
     ImGui::Spacing();
 
-    ImGui::TextWrapped(
+    DrawSubsectionHeading("BACKUP & RESTORE");
+    ImGui::Spacing();
+
+    ImGui::BulletText("Backup: copy all CSV files to a safe location.");
+    ImGui::BulletText(
+        "Restore: copy them back into the ./data folder with the "
+        "same names, then restart the app."
+    );
+    ImGui::BulletText(
         "If a file is missing, that category has no saved data yet."
     );
 }
@@ -1365,7 +1491,7 @@ void ShowApplication() {
             DrawProgressHistoryTab();
             ImGui::EndTabItem();
         }
-        if (BeginBoldTabItem("Upgrading Cost & Profit")) {
+        if (BeginBoldTabItem("Upgrading Cost & GAB Profit")) {
             DrawUpgradingCostTab();
             ImGui::EndTabItem();
         }

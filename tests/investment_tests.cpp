@@ -43,11 +43,46 @@ static void testCostToTargetNextPeriod() {
     assert(fabs(metrics.cost_to_target_next_period - 250000.0) < 1e-6);
 }
 
+static void testGoldPowerMetrics() {
+    GoldPowerInput input = {1000000.0, 102000.0, 2060440000000000.0, 3264975316157.0, 0, 0.0, 0, 0.0};
+    GoldPowerMetrics metrics = {};
+
+    assert(calculate_gold_power_metrics(&input, &metrics) == GOLD_POWER_OK);
+    assert(fabs(metrics.current_power - 1329.31) < 0.01);
+    assert(fabs(metrics.power_loss_per_season - (-234.69)) < 0.01);
+    assert(fabs(metrics.power_gain - 1.73) < 0.01);
+    assert(!metrics.has_power_with_saved_gold);
+    assert(!metrics.has_saved_gold_gap);
+    assert(!metrics.has_target_power);
+    assert(!metrics.has_target_gold_gap);
+}
+
+static void testGoldPowerMetricsWithOptionalGold() {
+    GoldPowerInput input = {1000000.0, 102000.0, 2060440000000000.0, 3264975316157.0,
+        1, 500000000000000.0, 1, 4000000000000000.0};
+    GoldPowerMetrics metrics = {};
+
+    assert(calculate_gold_power_metrics(&input, &metrics) == GOLD_POWER_OK);
+    assert(fabs(metrics.current_power - 1329.31) < 0.01);
+    assert(fabs(metrics.power_loss_per_season - (-234.69)) < 0.01);
+    assert(fabs(metrics.power_gain - 1.73) < 0.01);
+    assert(metrics.has_power_with_saved_gold);
+    assert(metrics.has_saved_gold_gap);
+    assert(metrics.has_target_power);
+    assert(metrics.has_target_gold_gap);
+    assert(metrics.power_with_saved_gold > metrics.current_power);
+    assert(metrics.target_power > metrics.current_power);
+    assert(fabs(metrics.saved_gold_gap - 500000000000000.0) < 0.01);
+    assert(fabs(metrics.target_gold_gap - 1939560000000000.0) < 0.01);
+}
+
 int main() {
     testCostFunction();
     testHeroTieredCostFunction();
     testInvestmentPercentages();
     testCostToTargetNextPeriod();
+    testGoldPowerMetrics();
+    testGoldPowerMetricsWithOptionalGold();
     std::printf("investment_tests: all checks passed\n");
     return 0;
 }

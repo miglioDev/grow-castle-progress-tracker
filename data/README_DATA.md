@@ -1,6 +1,7 @@
 # Data Directory
 
-This directory stores user save files.
+This directory stores user save files. 
+Do not manually modify the data in this folder.
 
 ## Saved Files
 

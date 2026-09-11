@@ -1,12 +1,14 @@
 #include "gpw.h"
 
+#include <math.h>
+
 GpwCalculationError calculate_gpw_analysis(const double *gold_samples, int sample_count,
     double wave_reached, double cost_per_wave_unit, GpwAnalysis *result)
 {
     if (!gold_samples || sample_count < 1 || !result) {
         return GPW_CALCULATION_NO_SAMPLES;
     }
-    if (wave_reached <= 0.0) {
+    if (!isfinite(wave_reached) || wave_reached <= 0.0 || !isfinite(cost_per_wave_unit)) {
         return GPW_CALCULATION_INVALID_WAVE;
     }
 
@@ -15,12 +17,16 @@ GpwCalculationError calculate_gpw_analysis(const double *gold_samples, int sampl
     double maximum_gold = gold_samples[0];
     for (int index = 0; index < sample_count; ++index) {
         const double gold = gold_samples[index];
-        if (gold < 0.0) {
+        if (!isfinite(gold) || gold < 0.0) {
             return GPW_CALCULATION_NEGATIVE_SAMPLE;
         }
         total_gold += gold;
         if (gold < minimum_gold) minimum_gold = gold;
         if (gold > maximum_gold) maximum_gold = gold;
+    }
+
+    if (!isfinite(total_gold)) {
+        return GPW_CALCULATION_NEGATIVE_SAMPLE;
     }
 
     result->gpw.avg = (total_gold / sample_count) / wave_reached;

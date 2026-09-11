@@ -35,10 +35,13 @@ static void testSampleRanges()
 static void testValidation()
 {
     const double negative_samples[] = {100.0, -1.0};
+    const double non_finite_samples[] = {100.0, NAN};
     GpwAnalysis analysis = {};
 
     assert(calculate_gpw_analysis(NULL, 0, 100.0, 456.0, &analysis) == GPW_CALCULATION_NO_SAMPLES);
     assert(calculate_gpw_analysis(negative_samples, 2, 100.0, 456.0, &analysis) == GPW_CALCULATION_NEGATIVE_SAMPLE);
+    assert(calculate_gpw_analysis(non_finite_samples, 2, 100.0, 456.0, &analysis) == GPW_CALCULATION_NEGATIVE_SAMPLE);
+    assert(calculate_gpw_analysis(negative_samples, 2, NAN, 456.0, &analysis) == GPW_CALCULATION_INVALID_WAVE);
 }
 
 int main()

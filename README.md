@@ -5,7 +5,7 @@
 ![C Language](https://img.shields.io/badge/Language-C-blue.svg)
 ![C++ Language](https://img.shields.io/badge/Language-C%2B%2B-blue.svg)
 ![MIT License](https://img.shields.io/badge/License-MIT-green.svg)
-![Version](https://img.shields.io/badge/Version-4.1.0-orange.svg)
+![Version](https://img.shields.io/badge/Version-5.0.0-orange.svg)
 
 If you find this project useful, please consider giving it a ⭐ it costs nothing and helps other Grow Castle players discover it.
 
@@ -27,25 +27,33 @@ I'm a CS student and a long-time Grow Castle player who built this project to or
 
 ### Player Data
 
-Enter and save your current progress, including waves, Infinity Castle, Leader, Town Archer, and Castle levels.
+Enter and save your current progress, including waves, Infinity Castle, Leader, Town Archer, and Castle levels. Add custom heroes or towers to track alongside the default one.
 
-![Player Data](screenshots/01player_data.png)
+![Player Data](screenshots/01_player_data.png)
 
-### Ratio, Levels & Economy
+### Ratios & Economy
 
-Compare your current unit levels with recommended ratios and adjust your targets as your build develops.
+Compare your current unit levels with recommended ratios and adjust your targets as you go further in the game.
 
 ![Ratio and Levels](screenshots/02_ratio.png)
 
-Review unit investments, cost-to-target planning, and the economy overview with its graphical breakdown.
+Review unit investments and cost-to-target planning, based on your current pace, for both the present and the next projection period.
 
-![Economy](screenshots/03_economy.png)
+![Investment & Cost](screenshots/03_investment.png)
+
+See how your gold is distributed across units.
+
+![Gold Distribution](screenshots/04_gold_distribution.png)
+
+Gold Power compares total invested gold with your current wave. It supports historical pace or Pace from the Season Analysis section, seasonal gold income, saved gold, and a desired gold target.
+
+![Gold Power](screenshots/05_gold_power.png)
 
 ### Pace & Season Analysis
 
-Calculate your wave pace, seasonal progress, and estimated downtime from your current bonuses and tracked snapshots.
+Calculate your wave pace, seasonal progress, and estimated downtime from your current tracked snapshots.
 
-![Pace and Season Analysis](screenshots/04_pace_season.png)
+![Pace and Season Analysis](screenshots/06_pace.png)
 
 ---
 
@@ -53,15 +61,19 @@ Calculate your wave pace, seasonal progress, and estimated downtime from your cu
 
 Review Infinity Castle gold production and follow your Infinity Castle-to-wave ratio over time.
 
-![IC Stats and History](screenshots/05_IC_stats.png)
+![IC Stats and History](screenshots/07_ic.png)
 
 ### Upgrading Cost & GAB profit
-Calculate the upgrade costs for Heroes, Leaders, Towers, Castle, and Town Archers. 
+Calculate the upgrade costs for Heroes, Leaders, Towers, Castle, and Town Archers.
+
+![Upgrading Cost](screenshots/08_upgrading%20cost.png)
+
 Also, by entering your own values, check whether GAB is profitable and sustainable.
 
-![Cost & GAB profit](screenshots/06_Cost_GAB.png)
+![GPW & GAB Profit](screenshots/09_gpw_gab.png)
 
 ---
+
 
 ## Download & Installation
 
@@ -134,14 +146,15 @@ With Visual Studio instead of Ninja, omit `-G Ninja`, build with `cmake --build 
 ## How to Use
 
 1. Open **Player Data** and enter your current wave and unit levels. Save a snapshot whenever you want to record progress. More snapshots improve historical pace and downtime estimates. Always make sure the data you enter reflects your actual progress at the time of saving. Saving incorrect data, or saving a second snapshot shortly after with a significantly different wave because the first one was incorrect, can distort the historical pace and downtime calculations. One accurate snapshot per day, saved consistently, can provide much more reliable results than many inaccurate or rushed snapshots. If you accidentally save incorrect data, you can immediately remove the latest snapshot using the **Delete Last Saved Data** button without affecting your other saved data. A snapshot cannot be saved if any field contains 0 or a negative value.
-2. Add optional custom heroes or towers in the **Custom** area. Enter their name, target ratio, and level, then save the list.
-3. Use **Ratio, Levels & Economy** to compare current ratios with your targets. Adjust and save the recommended ratios when your build changes. This tab also contains investment and cost-to-target planning.
-4. Open **Pace & Season Analysis** and select the bonuses that match your current setup: Devil Horn, game speed, Golden Horn, Horn, Chrono, OB, and MBF. The tab displays RWPH, WPH, daily waves, seasonal waves, actual pace, and downtime for All Time, Last Month, Last 5 Days, or Last 24 Hours.
-5. Open **Upgrading Cost & Profit** to calculate an upgrade cost by selecting the unit type and entering the starting and target levels. The Profit Estimate section uses your tracked snapshots to show TAB profit for the last valid period. It also shows a future projection using the existing Projection Days value and assumes no future downtime.
-6. Use **IC Stats & History** to review Infinity Castle gold production and the historical Infinity Castle-to-wave ratio graph.
+2. Add optional custom heroes or towers in the **Add Custom** area. Enter their name, target ratio, and level, then save. You can later update and save their levels directly in this tab, or edit their target ratios in the **Ratios & Economy** tab. Use **Delete Custom Hero** if you need to remove one permanently.
+3. Use **Ratios & Economy** to compare current ratios with your targets. Adjust and save the recommended ratios (including any custom units) when your build changes; saving here saves any custom hero ratio/level edits made in this tab. This tab also contains investment and cost-to-target planning, gold distribution, and Gold Power.
+4. Open **Pace & Season Analysis** and select the settings that match your current setup: Devil Horn, game speed, Chrono, Golden Horn, Horn, OB, and MBF. The tab displays RWPH, WPH, daily waves, seasonal waves, actual pace, and downtime for All Time, Last Month, Last 5 Days, or Last 24 Hours, calculated from your saved Player Data history.
+5. Open **Upgrading Cost & GAB Profit** to calculate the gold cost of an upgrade by selecting the unit type and entering the starting and target levels. The **Gold Per Wave (GPW)** section lets you manually enter one or more gold amounts earned from Gold Auto Battle (GAB) runs; it uses your currently saved wave from Player Data and a breakeven point of 456 gold/wave to estimate your average/min/max profit per wave and tell you whether GAB is currently profitable.
+6. Use **IC Stats & History** to review Infinity Town gold production and the historical IC-to-wave ratio graph (in Player Data you're supposed to enter the Infinity Town level itself, not the defense) ratio is shown in this tab.
 7. Use the **Info** tab to view useful information about the application and the local data files, including their names and location. Your progress is stored in CSV files inside the `/data` folder. These files can be copied elsewhere to create a backup or transferred to another installation or version of the app to carry your saved progress with you.
 
 All your data is stored locally inside the `/data` folder using a CSV file and is automatically updated whenever new stats are saved.
+Please do not manually modify the data in this folder. I have already implemented handling for cases where corrupted or incorrectly formatted data was saved, but all modifications should be made through the application.
 
 ---
 

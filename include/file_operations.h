@@ -9,8 +9,10 @@ extern "C" {
 #include "graph.h"
 #include "pace_analysis.h"
 
+// File operation:
 // Save current player record (append). Returns 0 on error.
 int save_player_data(const Player *p);
+int replace_last_player_data(const Player *p);
 
 // Load the last saved player record into p. Returns 1 if loaded, 0 if no data / error.
 int load_last_player_data(Player *p);
@@ -18,6 +20,7 @@ int delete_last_player_record(void);
 
 // Fills out[] with up to max_entries; returns number of entries read (0 = none / file missing).
 int read_progress_history(const char *filename, ProgressData *out, int max_entries);
+int get_progress_history_invalid_row_count(void);
 
 int save_custom_hero(const CustomHero *hero);
 int load_custom_heroes(CustomHero *heroes, int max_heroes);

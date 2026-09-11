@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-// Minimal struct with the fields needed for progress history.
+// progress history struct
 typedef struct {
     char date[32];
     long long wave;

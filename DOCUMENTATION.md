@@ -1,17 +1,17 @@
 # Grow Castle Progress Tracker
 
-Hi, here’s all the maths behind the game that I used in the programme. Generally, the formulas are taken from the game itself. If you have any other questions or have spotted any errors, please do get in touch!
-The application stores local CSV data in `data/` and reloads it at startup.
+Hi, here’s all the maths behind the game that I used in my code. Generally, the formulas are taken from the game itself. If you have any other questions or have spotted any errors, please do get in touch!
 
 ## Player Data
 
+The application stores local CSV data in `data/` and reloads it at startup.
 player_data: 
 Each saved record contains wave, Infinity Castle, Leader, Town Archer, Castle and a timestamp
 
 custom_hero Custom heroes store a name, level, and
 target ratio.
 
-## Ratios and Economy
+## Ratios & Economy
 
 ```text
 current ratio = unit level / current wave
@@ -36,6 +36,37 @@ cost to target now = max(cost(target level) - investment, 0)
 cost to target next period = max(cost(projected target level) - cost(target level), 0)
 investment percentage = unit investment / total investment
 ```
+
+## Gold Power
+
+The section uses the current wave, the total gold invested in the build, a pace
+source, and the estimated gold income per season.
+
+```text
+gp = total_gold_invested / (wave^2 * K)
+future_gp_no_spend = total_gold_invested / ((wave + pace)^2 * K)
+gp_loss_per_season = future_gp_no_spend - gp
+gp_loss_pct = 1 - (future_gp_no_spend / gp)
+
+max_gp = (income_per_season / pace) / (K * wave * 2)
+gp_gain = income_per_season / ((wave + pace)^2 * K)
+gp_gain_pct = gp_gain / gp
+max_gp_gold_gap = (max_gp - gp) * (wave^2 * K)
+```
+
+Optional inputs are not calculated or displayed until provided:
+
+```text
+gp_plus_saved = (total_gold_invested + saved_gold_equivalent) / (wave^2 * K)
+saved_gold_gap = (gp_plus_saved - gp) * (wave^2 * K)
+
+gp_desired = desired_gold_target / (wave^2 * K)
+desired_gold_gap = (gp_desired - gp) * (wave^2 * K)
+```
+
+The table displays the GP values in its first row. Its second row displays the
+corresponding gold gap, or the loss/gain percentage for the last two columns. A
+negative desired gold gap means the desired target has already been exceeded.
 
 ## Pace and Season
 

@@ -11,16 +11,30 @@ static void glfw_error_callback(int error, const char* description)
 }
 
 static ImFont* g_ui_bold_font = NULL;
+static ImFont* g_ui_header_font = NULL;
+static ImFont* g_ui_hero_font = NULL;
 
 ImFont* GetUiBoldFont()
 {
     return g_ui_bold_font;
 }
 
+ImFont* GetUiHeaderFont()
+{
+    return g_ui_header_font;
+}
+
+ImFont* GetUiHeroFont()
+{
+    return g_ui_hero_font;
+}
+
 static void configure_ui_scale(ImGuiIO& io)
 {
     constexpr float ui_scale = 1.35f;
     constexpr float font_size = 24.0f;
+    constexpr float header_font_size = 29.0f;
+    constexpr float hero_font_size = 38.0f;
     const char* regular_font_paths[] = {
 #ifdef _WIN32
         "C:/Windows/Fonts/segoeui.ttf",
@@ -61,6 +75,30 @@ static void configure_ui_scale(ImGuiIO& io)
         g_ui_bold_font = regular_font;
     }
 
+    for (int i = 0; bold_font_paths[i] != NULL && g_ui_header_font == NULL; ++i) {
+        g_ui_header_font = io.Fonts->AddFontFromFileTTF(bold_font_paths[i], header_font_size);
+    }
+    if (g_ui_header_font == NULL) {
+        for (int i = 0; regular_font_paths[i] != NULL && g_ui_header_font == NULL; ++i) {
+            g_ui_header_font = io.Fonts->AddFontFromFileTTF(regular_font_paths[i], header_font_size);
+        }
+    }
+    if (g_ui_header_font == NULL) {
+        g_ui_header_font = g_ui_bold_font;
+    }
+
+    for (int i = 0; bold_font_paths[i] != NULL && g_ui_hero_font == NULL; ++i) {
+        g_ui_hero_font = io.Fonts->AddFontFromFileTTF(bold_font_paths[i], hero_font_size);
+    }
+    if (g_ui_hero_font == NULL) {
+        for (int i = 0; regular_font_paths[i] != NULL && g_ui_hero_font == NULL; ++i) {
+            g_ui_hero_font = io.Fonts->AddFontFromFileTTF(regular_font_paths[i], hero_font_size);
+        }
+    }
+    if (g_ui_hero_font == NULL) {
+        g_ui_hero_font = g_ui_header_font;
+    }
+
     io.FontDefault = regular_font;
     ImGuiStyle& style = ImGui::GetStyle();
     style.ScaleAllSizes(ui_scale);
@@ -82,7 +120,7 @@ static void configure_ui_style()
     style.ChildRounding = 5.0f;
     style.FrameRounding = 4.0f;
     style.PopupRounding = 5.0f;
-    style.TabRounding = 4.0f;
+    style.TabRounding = 6.0f;
     style.WindowBorderSize = 1.0f;
     style.ChildBorderSize = 1.0f;
     style.FrameBorderSize = 1.0f;
@@ -98,10 +136,10 @@ static void configure_ui_style()
     colors[ImGuiCol_FrameBgActive] = ImVec4(0.16f, 0.30f, 0.46f, 1.0f);
     colors[ImGuiCol_TitleBg] = ImVec4(0.045f, 0.070f, 0.115f, 1.0f);
     colors[ImGuiCol_TitleBgActive] = ImVec4(0.075f, 0.145f, 0.235f, 1.0f);
-    colors[ImGuiCol_Tab] = ImVec4(0.075f, 0.145f, 0.235f, 1.0f);
-    colors[ImGuiCol_TabHovered] = ImVec4(0.12f, 0.30f, 0.50f, 1.0f);
-    colors[ImGuiCol_TabSelected] = ImVec4(0.10f, 0.24f, 0.40f, 1.0f);
-    colors[ImGuiCol_TabSelectedOverline] = ImVec4(0.30f, 0.65f, 1.0f, 1.0f);
+    colors[ImGuiCol_Tab] = ImVec4(0.060f, 0.115f, 0.185f, 1.0f);
+    colors[ImGuiCol_TabHovered] = ImVec4(0.11f, 0.28f, 0.46f, 1.0f);
+    colors[ImGuiCol_TabSelected] = ImVec4(0.14f, 0.32f, 0.52f, 1.0f);
+    colors[ImGuiCol_TabSelectedOverline] = ImVec4(0.38f, 0.74f, 1.0f, 1.0f);
     colors[ImGuiCol_Button] = ImVec4(0.10f, 0.27f, 0.46f, 1.0f);
     colors[ImGuiCol_ButtonHovered] = ImVec4(0.14f, 0.38f, 0.62f, 1.0f);
     colors[ImGuiCol_ButtonActive] = ImVec4(0.08f, 0.20f, 0.34f, 1.0f);
@@ -127,8 +165,10 @@ int main(int, char**)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
     GLFWwindow* window = glfwCreateWindow(1280, 720, "Grow Castle Progress Tracker", NULL, NULL);
-    if (window == NULL)
+    if (window == NULL) {
+        glfwTerminate();
         return 1;
+    }
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1);
 

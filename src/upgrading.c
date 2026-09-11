@@ -3,10 +3,10 @@
 
 static const UnitCostParameters UNIT_COST_MODELS[] = {
     {1250.0, 0.0, 0.0}, /* Castle: cumulative cost = 1250 * level^2. */
-    {500.0, 0.0, 0.0},  /* Town Archers: derived from existing upgrade formula. */
-    {1250.0, 0.0, 0.0}, /* Infinity Castle: uses Castle model until calibrated. */
-    {0.0, 0.0, 0.0},    /* Leader/Hero/Tower: uses tiered cumulative cost. */
-    {0.0, 0.0, 0.0}     /* Custom Hero: uses tiered cumulative cost. */
+    {500.0, 0.0, 0.0},  /* TA: same as upgrade formula. */
+    {1250.0, 0.0, 0.0}, // ic
+    {0.0, 0.0, 0.0},    /* Leader/Hero/Tower: uses tiered cumulative cost */
+    {0.0, 0.0, 0.0}     /* Custom Hero */
 };
 
 static double triangular_number(double level)
